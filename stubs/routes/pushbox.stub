@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+use Andriichuk\Pushbox\Facades\Pushbox;
+
+/*
+|--------------------------------------------------------------------------
+| Pushbox registrations
+|--------------------------------------------------------------------------
+|
+| Register notifications (and optional factories) to preview FCM payloads.
+|
+*/
+
+// Pushbox::add(App\Notifications\ExamplePush::class);
+
+// Pushbox::to(App\Models\User::factory()->make())->group(function () {
+//     Pushbox::add(App\Notifications\WelcomeNotification::class);
+// });
+
+// Pushbox::category('Orders')->group(function () {
+//     Pushbox::add(App\Notifications\OrderShippedNotification::class);
+// });
