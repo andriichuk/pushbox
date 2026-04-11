@@ -29,7 +29,10 @@ class PushboxController extends Controller
 
         $payload = $item ? $pushbox->previewPayload($item) : ['fcm' => null];
 
-        return view('pushbox::index', [
+        /** @var view-string $view */
+        $view = 'pushbox::index';
+
+        return view($view, [
             'grouped' => $pushbox->groupedNotifications(),
             'selected' => $item,
             'payload' => $payload,

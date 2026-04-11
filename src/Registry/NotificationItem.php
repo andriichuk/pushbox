@@ -101,7 +101,7 @@ class NotificationItem
             ? $factory
             : self::inferClassName($factory);
 
-        return new self($className, $label, $category, $factory, $notifiable, $notifiable);
+        return new self($className, $label, $category, $factory, $notifiable);
     }
 
     /**
