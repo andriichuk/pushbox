@@ -1,7 +1,9 @@
 # Pushbox
 
-[![PHP](https://img.shields.io/badge/PHP-8.4+-8892BF.svg)](https://www.php.net/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](./)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/andriichuk/pushbox.svg?style=flat-square)](https://packagist.org/packages/andriichuk/pushbox)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/andriichuk/pushbox/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/andriichuk/pushbox/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/andriichuk/pushbox/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/andriichuk/pushbox/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/andriichuk/pushbox.svg?style=flat-square)](https://packagist.org/packages/andriichuk/pushbox)
 
 Pushbox is a Laravel package inspired by [Mailbook](https://github.com/Xammie/mailbook): it lets you **preview FCM push payloads** for `Notification` classes in the browser, without wiring a one-off controller in your app.
 
