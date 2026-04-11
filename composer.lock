@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "013ad1d5cc8e8a3878a545fe831d5618",
+    "content-hash": "a53cef2e40935182a9555d260c22874d",
     "packages": [
         {
             "name": "brick/math",
@@ -6941,58 +6941,17 @@
             "time": "2025-04-30T06:54:44+00:00"
         },
         {
-            "name": "iamcal/sql-parser",
-            "version": "v0.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/iamcal/SQLParser.git",
-                "reference": "610392f38de49a44dab08dc1659960a29874c4b8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/iamcal/SQLParser/zipball/610392f38de49a44dab08dc1659960a29874c4b8",
-                "reference": "610392f38de49a44dab08dc1659960a29874c4b8",
-                "shasum": ""
-            },
-            "require-dev": {
-                "php-coveralls/php-coveralls": "^1.0",
-                "phpunit/phpunit": "^5|^6|^7|^8|^9"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "iamcal\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Cal Henderson",
-                    "email": "cal@iamcal.com"
-                }
-            ],
-            "description": "MySQL schema parser",
-            "support": {
-                "issues": "https://github.com/iamcal/SQLParser/issues",
-                "source": "https://github.com/iamcal/SQLParser/tree/v0.7"
-            },
-            "time": "2026-01-28T22:20:33+00:00"
-        },
-        {
             "name": "kreait/firebase-php",
-            "version": "7.24.1",
+            "version": "8.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/beste/firebase-php.git",
-                "reference": "935292e2af33af0120654ce704f1dc8f1c03025b"
+                "reference": "7a1007c8151e1bf7be9f6b0f9a1e37b1f734f59e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/beste/firebase-php/zipball/935292e2af33af0120654ce704f1dc8f1c03025b",
-                "reference": "935292e2af33af0120654ce704f1dc8f1c03025b",
+                "url": "https://api.github.com/repos/beste/firebase-php/zipball/7a1007c8151e1bf7be9f6b0f9a1e37b1f734f59e",
+                "reference": "7a1007c8151e1bf7be9f6b0f9a1e37b1f734f59e",
                 "shasum": ""
             },
             "require": {
@@ -7014,27 +6973,18 @@
                 "kreait/firebase-tokens": "^5.2",
                 "lcobucci/jwt": "^5.3",
                 "mtdowling/jmespath.php": "^2.8.0",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+                "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
                 "psr/cache": "^2.0 || ^3.0",
                 "psr/clock": "^1.0",
                 "psr/http-client": "^1.0.3",
                 "psr/http-factory": "^1.1",
-                "psr/http-message": "^1.1 || ^2.0",
-                "psr/log": "^3.0.2"
+                "psr/http-message": "^1.1 || ^2.0"
             },
             "require-dev": {
-                "google/cloud-firestore": "^1.54.2",
-                "php-cs-fixer/shim": "^3.88.2",
-                "phpstan/extension-installer": "^1.4.3",
-                "phpstan/phpstan": "^2.1.31",
-                "phpstan/phpstan-deprecation-rules": "^2.0.3",
-                "phpstan/phpstan-phpunit": "^2.0.7",
-                "phpstan/phpstan-strict-rules": "^2.0.7",
-                "phpunit/phpunit": "^10.5.58",
-                "rector/rector": "^2.2.2",
-                "shipmonk/composer-dependency-analyser": "^1.8.3",
-                "symfony/var-dumper": "^6.4.15 || ^7.3.4",
-                "vlucas/phpdotenv": "^5.6.2"
+                "google/cloud-firestore": "^1.55.0",
+                "psr/log": "^3.0.2",
+                "symfony/var-dumper": "^7.4.4 || ^8.0.4",
+                "vlucas/phpdotenv": "^5.6.3"
             },
             "suggest": {
                 "google/cloud-firestore": "^1.0 to use the Firestore component"
@@ -7042,12 +6992,13 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-7.x": "7.x-dev"
+                    "dev-7.x": "7.x-dev",
+                    "dev-8.x": "8.x-dev"
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Kreait\\Firebase\\": "src/Firebase"
+                    "Kreait\\Firebase\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -7061,7 +7012,7 @@
                 }
             ],
             "description": "Firebase Admin SDK",
-            "homepage": "https://github.com/kreait/firebase-php",
+            "homepage": "https://github.com/beste/firebase-php",
             "keywords": [
                 "api",
                 "database",
@@ -7071,8 +7022,8 @@
             ],
             "support": {
                 "docs": "https://firebase-php.readthedocs.io",
-                "issues": "https://github.com/kreait/firebase-php/issues",
-                "source": "https://github.com/kreait/firebase-php"
+                "issues": "https://github.com/beste/firebase-php/issues",
+                "source": "https://github.com/beste/firebase-php"
             },
             "funding": [
                 {
@@ -7080,7 +7031,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-18T23:43:18+00:00"
+            "time": "2026-03-04T12:06:19+00:00"
         },
         {
             "name": "kreait/firebase-tokens",
@@ -7158,29 +7109,29 @@
         },
         {
             "name": "kreait/laravel-firebase",
-            "version": "6.2.0",
+            "version": "7.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/beste/laravel-firebase.git",
-                "reference": "1928f8dbf7882f24f9d33eaf5d4bee24b2663981"
+                "reference": "8dadce35b23301c21df4e5c05a3ec1dd8359adaa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/beste/laravel-firebase/zipball/1928f8dbf7882f24f9d33eaf5d4bee24b2663981",
-                "reference": "1928f8dbf7882f24f9d33eaf5d4bee24b2663981",
+                "url": "https://api.github.com/repos/beste/laravel-firebase/zipball/8dadce35b23301c21df4e5c05a3ec1dd8359adaa",
+                "reference": "8dadce35b23301c21df4e5c05a3ec1dd8359adaa",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^11.0 || ^12.0",
-                "illuminate/notifications": "^11.0 || ^12.0",
-                "illuminate/support": "^11.0 || ^12.0",
-                "kreait/firebase-php": "^7.19",
+                "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/notifications": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+                "kreait/firebase-php": "^8.0",
                 "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
                 "symfony/cache": "^6.1.2 || ^7.0.3"
             },
             "require-dev": {
                 "laravel/pint": "^1.22.1",
-                "orchestra/testbench": "^9.0 || ^10.4",
+                "orchestra/testbench": "^9.0 || ^10.4 || ^11.0",
                 "phpunit/phpunit": "^11.5.23"
             },
             "type": "library",
@@ -7221,134 +7172,41 @@
             ],
             "support": {
                 "issues": "https://github.com/beste/laravel-firebase/issues",
-                "source": "https://github.com/beste/laravel-firebase/tree/6.2.0"
+                "source": "https://github.com/beste/laravel-firebase/tree/7.1.0"
             },
             "funding": [
                 {
-                    "url": "https://github.com/jeromegamez",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/kreait/laravel-firebase",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2025-11-28T14:26:28+00:00"
-        },
-        {
-            "name": "larastan/larastan",
-            "version": "v3.9.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/larastan/larastan.git",
-                "reference": "41db11d7d6417e7164482252c380bdc03fc41397"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/larastan/larastan/zipball/41db11d7d6417e7164482252c380bdc03fc41397",
-                "reference": "41db11d7d6417e7164482252c380bdc03fc41397",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "iamcal/sql-parser": "^0.7.0",
-                "illuminate/console": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/container": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/contracts": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/database": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/http": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/pipeline": "^11.44.2 || ^12.4.1 || ^13",
-                "illuminate/support": "^11.44.2 || ^12.4.1 || ^13",
-                "php": "^8.2",
-                "phpstan/phpstan": "^2.1.44"
-            },
-            "require-dev": {
-                "doctrine/coding-standard": "^13",
-                "laravel/framework": "^11.44.2 || ^12.7.2 || ^13",
-                "mockery/mockery": "^1.6.12",
-                "nikic/php-parser": "^5.4",
-                "orchestra/canvas": "^v9.2.2 || ^10.0.1 || ^11",
-                "orchestra/testbench-core": "^9.12.0 || ^10.1 || ^11",
-                "phpstan/phpstan-deprecation-rules": "^2.0.1",
-                "phpunit/phpunit": "^10.5.35 || ^11.5.15 || ^12.5.8"
-            },
-            "suggest": {
-                "orchestra/testbench": "Using Larastan for analysing a package needs Testbench",
-                "phpmyadmin/sql-parser": "Install to enable Larastan's optional phpMyAdmin-based SQL parser automatically"
-            },
-            "type": "phpstan-extension",
-            "extra": {
-                "phpstan": {
-                    "includes": [
-                        "extension.neon"
-                    ]
-                },
-                "branch-alias": {
-                    "dev-master": "3.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Larastan\\Larastan\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Can Vural",
-                    "email": "can9119@gmail.com"
-                }
-            ],
-            "description": "Larastan - Discover bugs in your code without running it. A phpstan/phpstan extension for Laravel",
-            "keywords": [
-                "PHPStan",
-                "code analyse",
-                "code analysis",
-                "larastan",
-                "laravel",
-                "package",
-                "php",
-                "static analysis"
-            ],
-            "support": {
-                "issues": "https://github.com/larastan/larastan/issues",
-                "source": "https://github.com/larastan/larastan/tree/v3.9.4"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/canvural",
+                    "url": "https://github.com/sponsors/jeromegamez",
                     "type": "github"
                 }
             ],
-            "time": "2026-04-02T07:08:56+00:00"
+            "time": "2026-03-19T23:57:10+00:00"
         },
         {
             "name": "laravel-notification-channels/fcm",
-            "version": "5.1.0",
+            "version": "6.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel-notification-channels/fcm.git",
-                "reference": "a4df1477c2be07b96fb42b0e35eaf14dcd00ec41"
+                "reference": "c901ced4d47a511f874a695dd9fb95c4a3dd51a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel-notification-channels/fcm/zipball/a4df1477c2be07b96fb42b0e35eaf14dcd00ec41",
-                "reference": "a4df1477c2be07b96fb42b0e35eaf14dcd00ec41",
+                "url": "https://api.github.com/repos/laravel-notification-channels/fcm/zipball/c901ced4d47a511f874a695dd9fb95c4a3dd51a9",
+                "reference": "c901ced4d47a511f874a695dd9fb95c4a3dd51a9",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.0",
-                "illuminate/notifications": "^11.0|^12.0",
-                "illuminate/support": "^11.0|^12.0",
-                "kreait/laravel-firebase": "^6.0",
-                "php": "^8.2"
+                "illuminate/notifications": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "kreait/laravel-firebase": "^6.0 || ^7.0",
+                "php": "^8.3"
             },
             "require-dev": {
+                "laravel/pint": "^1.25",
                 "mockery/mockery": "^1.6.0",
-                "phpunit/phpunit": "^11.0"
+                "phpunit/phpunit": "^12.0"
             },
             "type": "library",
             "autoload": {
@@ -7372,9 +7230,9 @@
             "homepage": "https://github.com/laravel-notification-channels/fcm",
             "support": {
                 "issues": "https://github.com/laravel-notification-channels/fcm/issues",
-                "source": "https://github.com/laravel-notification-channels/fcm/tree/5.1.0"
+                "source": "https://github.com/laravel-notification-channels/fcm/tree/6.1.0"
             },
-            "time": "2025-02-26T20:56:25+00:00"
+            "time": "2026-02-20T21:49:09+00:00"
         },
         {
             "name": "laravel/pail",
@@ -8562,59 +8420,6 @@
                 "source": "https://github.com/phar-io/version/tree/3.2.1"
             },
             "time": "2022-02-21T01:04:05+00:00"
-        },
-        {
-            "name": "phpstan/phpstan",
-            "version": "2.1.46",
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
-                "reference": "a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.4|^8.0"
-            },
-            "conflict": {
-                "phpstan/phpstan-shim": "*"
-            },
-            "bin": [
-                "phpstan",
-                "phpstan.phar"
-            ],
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "PHPStan - PHP Static Analysis Tool",
-            "keywords": [
-                "dev",
-                "static analysis"
-            ],
-            "support": {
-                "docs": "https://phpstan.org/user-guide/getting-started",
-                "forum": "https://github.com/phpstan/phpstan/discussions",
-                "issues": "https://github.com/phpstan/phpstan/issues",
-                "security": "https://github.com/phpstan/phpstan/security/policy",
-                "source": "https://github.com/phpstan/phpstan-src"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/ondrejmirtes",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/phpstan",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-04-01T09:25:14+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -10699,5 +10504,5 @@
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
