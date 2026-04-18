@@ -21,6 +21,8 @@ class PreviewResolverTest extends TestCase
 
         $this->assertNotNull($payload['fcm']);
         $this->assertArrayHasKey('json', $payload['fcm']);
+        $this->assertSame('Hi', $payload['fcm']['display']['title'] ?? null);
+        $this->assertSame('Hello', $payload['fcm']['display']['body'] ?? null);
         $this->assertArrayNotHasKey('sms', $payload);
     }
 }

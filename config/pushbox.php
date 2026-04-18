@@ -87,6 +87,7 @@ return [
     'send' => [
         'enabled' => env('PUSHBOX_ALLOW_SEND', false),
         'fcm' => [
+            // Default target when no device token is stored in session (Pushbox UI).
             'token' => env('PUSHBOX_FCM_TOKEN'),
         ],
     ],

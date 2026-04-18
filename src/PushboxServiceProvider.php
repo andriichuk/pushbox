@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace Andriichuk\Pushbox;
 
 use Andriichuk\Pushbox\Http\Middleware\EnsurePushboxEnabled;
+use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
+use Andriichuk\Pushbox\Listeners\RecordPushboxFcmNotificationFailure;
 use Andriichuk\Pushbox\Preview\FcmPreviewNormalizer;
 use Andriichuk\Pushbox\Preview\PreviewResolver;
+use Andriichuk\Pushbox\Sending\PendingFcmCapture;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +35,20 @@ class PushboxServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pushbox');
+
+        Event::listen(NotificationFailed::class, RecordPushboxFcmNotificationFailure::class);
+
+        Event::listen(NotificationSent::class, function (NotificationSent $event): void {
+            if (! app()->bound(PendingFcmCapture::class)) {
+                return;
+            }
+
+            if (! SendPushboxFcmNotificationJob::isFcmNotificationChannel($event->channel)) {
+                return;
+            }
+
+            app(PendingFcmCapture::class)->response = $event->response;
+        });
 
         $this->registerRoutes();
 

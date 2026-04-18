@@ -21,12 +21,18 @@ class FcmPreviewNormalizer
             return [
                 'structured' => $arr,
                 'json' => json_encode($arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                'display' => FcmDisplayExtractor::fromStructured($arr),
             ];
         }
 
         return [
             'structured' => ['value' => $message],
             'json' => json_encode($message, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            'display' => [
+                'title' => null,
+                'body' => null,
+                'image' => null,
+            ],
         ];
     }
 }
