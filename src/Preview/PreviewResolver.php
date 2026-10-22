@@ -47,8 +47,9 @@ class PreviewResolver
         $book = $this->container->make('pushbox');
         $locale = $book instanceof Pushbox ? $book->getLocale() : null;
 
-        return $this->withLocale($locale, function () use ($item): array {
-            $notification = $item->resolve($this->container);
+        return $this->withLocale($locale, function () use ($item, $locale): array {
+            $notification = clone $item->resolve($this->container);
+            $notification->locale($locale);
             $notifiable = $item->notifiable() ?? new \stdClass;
 
             $fcm = null;
