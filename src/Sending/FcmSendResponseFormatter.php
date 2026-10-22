@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox\Sending;
 
+use Andriichuk\Pushbox\Support\TokenMask;
+use Illuminate\Support\Collection;
 use JsonSerializable;
 use Stringable;
 use Throwable;
@@ -26,6 +28,18 @@ final class FcmSendResponseFormatter
 
         if (is_array($response)) {
             return self::jsonPretty($response);
+        }
+
+        if (is_object($response) && method_exists($response, 'getItems')) {
+            return self::jsonPretty(array_map(fn ($report) => self::sendReportData($report), $response->getItems()));
+        }
+
+        if (is_object($response) && method_exists($response, 'target') && method_exists($response, 'isFailure')) {
+            return self::jsonPretty(self::sendReportData($response));
+        }
+
+        if ($response instanceof Collection) {
+            return self::jsonPretty($response->map(fn ($report) => json_decode(self::toDisplayString($report), true))->all());
         }
 
         if ($response instanceof JsonSerializable) {
@@ -70,6 +84,19 @@ final class FcmSendResponseFormatter
         }
 
         return (string) $response;
+    }
+
+    /** @return array<string, mixed> */
+    private static function sendReportData(object $report): array
+    {
+        $error = $report->error();
+
+        return [
+            'accepted' => ! $report->isFailure(),
+            'target' => TokenMask::mask($report->target()->value()),
+            'result' => $report->result(),
+            'error' => $error instanceof Throwable ? $error->getMessage() : null,
+        ];
     }
 
     /**

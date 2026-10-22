@@ -1,28 +1,32 @@
-name: PHPStan
-
+name: quality
 on:
+  pull_request:
   push:
-    paths:
-      - '**.php'
-      - 'phpstan.neon.dist'
-      - '.github/workflows/phpstan.yml'
-
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  phpstan:
-    name: phpstan
+  quality:
+    name: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           coverage: none
-
-      - name: Install composer dependencies
-        uses: ramsey/composer-install@v4
-
-      - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyse --error-format=github
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --prefer-dist --no-interaction
+      - run: composer validate --strict
+      - run: composer audit
+      - run: composer analyse
+      - run: composer lint:check
+      - run: npm ci --ignore-scripts
+      - run: npm audit
+      - run: npm run build
+      - run: git diff --exit-code -- resources/dist/pushbox.css

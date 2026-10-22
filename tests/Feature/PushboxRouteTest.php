@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox\Tests\Feature;
 
+use Andriichuk\Pushbox\Http\Controllers\PushboxController;
 use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
@@ -63,10 +64,12 @@ class PushboxRouteTest extends TestCase
 
         Bus::fake();
 
-        $this->from('/pushbox')
+        $token = 'test-token-'.str_repeat('a', 20);
+        $this->withSession([PushboxController::SESSION_FCM_DEVICE_TOKEN => $token])->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
-                'fcm_token' => 'test-token-'.str_repeat('a', 20),
+                'confirm_send' => '1',
+                'target_hash' => hash('sha256', $token),
             ])
             ->assertRedirect();
 
@@ -87,6 +90,8 @@ class PushboxRouteTest extends TestCase
         $this->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
+                'confirm_send' => '1',
+                'target_hash' => hash('sha256', ''),
             ])
             ->assertRedirect()
             ->assertSessionHasErrors(['pushbox']);
@@ -96,7 +101,7 @@ class PushboxRouteTest extends TestCase
 
     private function writeRouteFile(): void
     {
-        $path = $this->app->basePath('routes/pushbox.php');
+        $path = config('pushbox.route_file');
         if (! is_dir(dirname($path))) {
             mkdir(dirname($path), 0777, true);
         }

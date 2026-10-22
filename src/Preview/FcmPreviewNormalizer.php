@@ -20,14 +20,14 @@ class FcmPreviewNormalizer
 
             return [
                 'structured' => $arr,
-                'json' => json_encode($arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                'json' => json_encode($arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
                 'display' => FcmDisplayExtractor::fromStructured($arr),
             ];
         }
 
         return [
             'structured' => ['value' => $message],
-            'json' => json_encode($message, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            'json' => json_encode($message, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
             'display' => [
                 'title' => null,
                 'body' => null,

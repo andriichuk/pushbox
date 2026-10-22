@@ -5,113 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>Pushbox</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style type="text/tailwindcss">
-        @import "tailwindcss";
-
-        :root {
-            color-scheme: light;
-            --background: oklch(0.98 0 0);
-            --foreground: oklch(0.15 0 0);
-            --card: oklch(1 0 0);
-            --card-foreground: oklch(0.15 0 0);
-            --popover: oklch(1 0 0);
-            --popover-foreground: oklch(0.15 0 0);
-            --primary: oklch(0.15 0 0);
-            --primary-foreground: oklch(0.98 0 0);
-            --secondary: oklch(0.94 0 0);
-            --secondary-foreground: oklch(0.15 0 0);
-            --muted: oklch(0.94 0 0);
-            --muted-foreground: oklch(0.45 0 0);
-            --accent: oklch(0.94 0 0);
-            --accent-foreground: oklch(0.15 0 0);
-            --destructive: oklch(0.55 0.2 25);
-            --destructive-foreground: oklch(0.98 0 0);
-            --border: oklch(0.88 0 0);
-            --input: oklch(0.94 0 0);
-            --ring: oklch(0.7 0 0);
-            --chart-1: oklch(0.7 0.15 145);
-            --chart-2: oklch(0.65 0.12 200);
-            --chart-3: oklch(0.6 0.1 260);
-            --chart-4: oklch(0.75 0.15 80);
-            --chart-5: oklch(0.7 0.18 30);
-            --radius: 0.5rem;
-            --sidebar: oklch(0.96 0 0);
-            --sidebar-foreground: oklch(0.15 0 0);
-            --sidebar-primary: oklch(0.15 0 0);
-            --sidebar-primary-foreground: oklch(0.98 0 0);
-            --sidebar-accent: oklch(0.92 0 0);
-            --sidebar-accent-foreground: oklch(0.15 0 0);
-            --sidebar-border: oklch(0.88 0 0);
-            --sidebar-ring: oklch(0.7 0 0);
-            --success: oklch(0.55 0.15 145);
-            --success-foreground: oklch(0.98 0 0);
-            --warning: oklch(0.7 0.15 80);
-            --warning-foreground: oklch(0.15 0 0);
-            --info: oklch(0.55 0.12 230);
-            --info-foreground: oklch(0.98 0 0);
-        }
-
-        @theme inline {
-            --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-            --font-mono: "Geist Mono", ui-monospace, monospace;
-            --color-background: var(--background);
-            --color-foreground: var(--foreground);
-            --color-card: var(--card);
-            --color-card-foreground: var(--card-foreground);
-            --color-popover: var(--popover);
-            --color-popover-foreground: var(--popover-foreground);
-            --color-primary: var(--primary);
-            --color-primary-foreground: var(--primary-foreground);
-            --color-secondary: var(--secondary);
-            --color-secondary-foreground: var(--secondary-foreground);
-            --color-muted: var(--muted);
-            --color-muted-foreground: var(--muted-foreground);
-            --color-accent: var(--accent);
-            --color-accent-foreground: var(--accent-foreground);
-            --color-destructive: var(--destructive);
-            --color-destructive-foreground: var(--destructive-foreground);
-            --color-border: var(--border);
-            --color-input: var(--input);
-            --color-ring: var(--ring);
-            --color-chart-1: var(--chart-1);
-            --color-chart-2: var(--chart-2);
-            --color-chart-3: var(--chart-3);
-            --color-chart-4: var(--chart-4);
-            --color-chart-5: var(--chart-5);
-            --radius-sm: calc(var(--radius) - 4px);
-            --radius-md: calc(var(--radius) - 2px);
-            --radius-lg: var(--radius);
-            --radius-xl: calc(var(--radius) + 4px);
-            --color-sidebar: var(--sidebar);
-            --color-sidebar-foreground: var(--sidebar-foreground);
-            --color-sidebar-primary: var(--sidebar-primary);
-            --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-            --color-sidebar-accent: var(--sidebar-accent);
-            --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-            --color-sidebar-border: var(--sidebar-border);
-            --color-sidebar-ring: var(--sidebar-ring);
-            --color-success: var(--success);
-            --color-success-foreground: var(--success-foreground);
-            --color-warning: var(--warning);
-            --color-warning-foreground: var(--warning-foreground);
-            --color-info: var(--info);
-            --color-info-foreground: var(--info-foreground);
-        }
-
-        @layer base {
-            * {
-                @apply border-border outline-ring/50;
-            }
-            html,
-            body {
-                @apply bg-background text-foreground;
-            }
-        }
-    </style>
+    <style>{!! $pushboxCss !!}</style>
 </head>
 <body class="h-full overflow-hidden font-sans antialiased">
 @php
@@ -235,31 +129,25 @@
     </div>
 
     <main class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-y-contain pt-14 lg:pt-0">
+        @if($previewError)
+            <div role="alert" class="mx-auto mt-6 max-w-5xl rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                <p class="font-semibold">Unable to preview this notification</p>
+                <p class="mt-2 break-words">{{ $previewError }}</p>
+            </div>
+        @endif
+        <div class="mx-auto max-w-5xl px-6 pt-6">
+            @include('pushbox::device-token')
+        </div>
         @if(!$selected)
             <div class="mx-auto max-w-5xl p-6">
-                <div class="mb-8 space-y-3">
-                    <form method="post" action="{{ route('pushbox.device-token') }}" class="flex flex-wrap items-end gap-3">
-                        @csrf
-                        <input type="hidden" name="class" value="">
-                        <input type="hidden" name="variant" value="{{ request('variant') }}">
-                        <input type="hidden" name="locale" value="{{ request('locale') }}">
-                        <div class="flex min-w-0 flex-1 flex-col sm:min-w-[18rem]">
-                            <label for="pushbox-fcm-token" class="mb-1.5 block text-xs font-medium text-muted-foreground">FCM Device Token</label>
-                            <textarea id="pushbox-fcm-token" name="fcm_token" rows="2" autocomplete="off" spellcheck="false"
-                                      placeholder="Paste token or leave empty for env default…"
-                                      class="w-full resize-y rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring">{{ old('fcm_token', $fcmDeviceToken ?? '') }}</textarea>
-                        </div>
-                        <button type="submit" class="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring">
-                            Send
-                        </button>
-                    </form>
-                    <p class="text-xs text-muted-foreground">Send stores the token for this session. Select a notification to dispatch FCM when sending is enabled.</p>
-                </div>
                 <div class="flex min-h-[40vh] flex-1 items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
                     <div>
                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 text-muted-foreground/50"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-                        <h3 class="text-lg font-medium text-foreground">No notification selected</h3>
-                        <p class="mt-1 text-sm text-muted-foreground">Select a notification from the list to preview its FCM payload.</p>
+                        <h3 class="text-lg font-medium text-foreground">Register your first notification</h3>
+                        <p class="mt-1 text-sm text-muted-foreground">Run php artisan pushbox:install, then add a notification in routes/pushbox.php.</p>
+                        <pre class="mt-4 overflow-auto rounded-lg bg-secondary p-3 text-left font-mono text-xs">use Andriichuk\Pushbox\Facades\Pushbox;
+
+Pushbox::add(App\Notifications\WelcomeNotification::class);</pre>
                     </div>
                 </div>
             </div>
@@ -275,7 +163,7 @@
                 $structured = is_array($fcm) && isset($fcm['structured']) && is_array($fcm['structured'])
                     ? $fcm['structured']
                     : [];
-                $metaLocale = request('locale', app()->getLocale());
+                $metaLocale = $selectedLocale;
                 $localeName = is_array($locales ?? null) ? ($locales[$metaLocale] ?? $metaLocale) : $metaLocale;
                 $variantQ = request('variant');
 
@@ -309,7 +197,7 @@
 
                 $pushboxSendEnabled = (bool) ($send['enabled'] ?? false);
                 $pushboxSendEnvOk = app()->isLocal() || $sendAllowNonLocal;
-                $pushboxCanSend = $pushboxSendEnabled && $pushboxSendEnvOk;
+                $pushboxCanSend = $pushboxSendEnabled && $pushboxSendEnvOk && $fcmDriverAvailable && ! $previewError;
             @endphp
 
             <div class="mx-auto max-w-5xl p-6">
@@ -334,7 +222,7 @@
                                 <select name="locale" onchange="this.form.submit()"
                                         class="h-9 w-36 rounded-md border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                                     @foreach($locales as $code => $label)
-                                        <option value="{{ $code }}" @selected(request('locale', app()->getLocale()) === $code)>{{ $label }}</option>
+                                        <option value="{{ $code }}" @selected($selectedLocale === $code)>{{ $label }}</option>
                                     @endforeach
                                 </select>
                             </label>
@@ -365,48 +253,37 @@
                     </div>
                 </div>
 
-                {{-- FCM token: Send persists token; dispatches when FCM + send allowed --}}
                 <div class="mb-6 space-y-3">
-                    <form
-                        method="post"
-                        action="{{ ($fcm && $pushboxCanSend) ? route('pushbox.send') : route('pushbox.device-token') }}"
-                        class="flex flex-wrap items-end gap-3"
-                        @if($fcm && $pushboxCanSend)
-                            onsubmit="return confirm(@json('Send (sync queue)? Token is saved for this session. Priority: field → session → env.'));"
-                        @endif
-                    >
-                        @csrf
-                        <input type="hidden" name="class" value="{{ $selected->className() }}">
-                        <input type="hidden" name="variant" value="{{ request('variant') }}">
-                        <input type="hidden" name="locale" value="{{ request('locale') }}">
-                        <div class="flex min-w-0 flex-1 flex-col sm:min-w-[18rem]">
-                            <label for="pushbox-fcm-token" class="mb-1.5 block text-xs font-medium text-muted-foreground">FCM Device Token</label>
-                            <textarea id="pushbox-fcm-token" name="fcm_token" rows="2" autocomplete="off" spellcheck="false"
-                                      placeholder="Paste token or leave empty for env default…"
-                                      class="w-full resize-y rounded-md border border-border bg-input px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring">{{ old('fcm_token', $fcmDeviceToken ?? '') }}</textarea>
-                        </div>
-                        <button type="submit" class="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring">
-                            Send
-                        </button>
-                    </form>
-                    <p class="text-xs text-muted-foreground">Send always stores the token for this session (clear the field and Send to remove). When dispatching, uses this field if set, otherwise session or <code class="rounded bg-secondary px-1 font-mono text-[11px]">PUSHBOX_FCM_TOKEN</code>.</p>
                     @if($fcm && $pushboxCanSend)
-                        <p class="text-sm text-muted-foreground">Dispatches on the <strong class="font-semibold text-foreground">sync</strong> queue.</p>
-                    @elseif($fcm && ! $pushboxCanSend)
-                        <p class="text-sm text-muted-foreground">Sending is disabled until configuration allows it.</p>
+                        <form method="post" action="{{ route('pushbox.send') }}" data-confirm-send="{{ $fcmSendTargetHint }}" class="space-y-3">
+                            @csrf
+                            <input type="hidden" name="class" value="{{ $selected->className() }}">
+                            <input type="hidden" name="variant" value="{{ request('variant') }}">
+                            <input type="hidden" name="locale" value="{{ $selectedLocale }}">
+                            <input type="hidden" name="target_hash" value="{{ $fcmSendTargetHash }}">
+                            <p class="text-sm font-medium">Target: {{ $fcmSendTargetHint }}</p>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="confirm_send" value="1" required>
+                                I confirm this is my test device.
+                            </label>
+                            <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90">
+                                Send notification
+                            </button>
+                            <p class="text-xs text-muted-foreground">Sends immediately. FCM acceptance does not guarantee device delivery.</p>
+                        </form>
+                    @elseif($fcm)
+                        <p class="text-sm text-muted-foreground">Test sending is disabled.</p>
                         <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
+                            @if(! $fcmDriverAvailable)
+                                <li>Install the optional driver: <code>composer require laravel-notification-channels/fcm:^6.2</code>.</li>
+                            @endif
                             @if(! $pushboxSendEnabled)
-                                <li>Set <code class="rounded bg-secondary px-1 font-mono text-xs">PUSHBOX_ALLOW_SEND=true</code> in <code class="rounded bg-secondary px-1 font-mono text-xs">.env</code>.</li>
+                                <li>Set <code>PUSHBOX_ALLOW_SEND=true</code> in your local environment.</li>
                             @endif
                             @if(! $pushboxSendEnvOk)
-                                <li>Environment is <code class="rounded bg-secondary px-1 font-mono text-xs">{{ app()->environment() }}</code> — use <code class="rounded bg-secondary px-1 font-mono text-xs">APP_ENV=local</code> or <code class="rounded bg-secondary px-1 font-mono text-xs">PUSHBOX_SEND_NON_LOCAL=true</code>.</li>
+                                <li>Staging test sends also require <code>PUSHBOX_SEND_NON_LOCAL=true</code>.</li>
                             @endif
                         </ul>
-                    @elseif(! $fcm)
-                        <p class="text-sm text-muted-foreground">With no FCM payload, <strong class="font-medium text-foreground">Send</strong> only updates the stored token.</p>
-                    @endif
-                    @if(($fcmSendTargetHint ?? '') !== '' && $fcm && $pushboxCanSend)
-                        <p class="text-xs text-muted-foreground">Default target hint: {{ $fcmSendTargetHint }}</p>
                     @endif
 
                     @if(session('pushbox_send_result'))
@@ -426,7 +303,7 @@
                             <dl class="mt-2 grid gap-2 text-xs sm:grid-cols-2">
                                 <div class="sm:col-span-2">
                                     <dt class="text-muted-foreground">Status</dt>
-                                    <dd class="mt-0.5 font-medium text-foreground">{{ $srOk ? 'Success' : 'Failed' }}</dd>
+                                    <dd class="mt-0.5 font-medium text-foreground">{{ $srOk ? 'Accepted by FCM' : ucfirst($sendResult['status'] ?? 'failed') }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-muted-foreground">Queue</dt>
@@ -454,7 +331,7 @@
                             @endif
                             @if(filled($srResponse))
                                 <p class="mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{{ $srOk ? 'FCM response' : 'Error detail' }}</p>
-                                <pre class="mt-1 max-h-[min(320px,40vh)] overflow-auto rounded-lg border border-border bg-card p-3 text-[11px] leading-relaxed text-foreground">{{ e($srResponse) }}</pre>
+                                <pre class="mt-1 max-h-[min(320px,40vh)] overflow-auto rounded-lg border border-border bg-card p-3 text-[11px] leading-relaxed text-foreground">{{ $srResponse }}</pre>
                             @elseif($srOk && $srResponse === null)
                                 <p class="mt-3 text-xs italic text-muted-foreground">No FCM response body captured.</p>
                             @endif
@@ -573,7 +450,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
                                 Device previews
                             </div>
-                            <p class="mt-2 text-sm text-muted-foreground">Preview how the notification appears on iOS and Android lock screens. Title and body come from the FCM payload.</p>
+                            <p class="mt-2 text-sm text-muted-foreground">Visual approximations of iOS and Android notifications. Actual rendering depends on the OS and client app.</p>
                         </div>
                         <div class="px-6">
                             <div class="flex flex-wrap justify-center gap-8">
@@ -677,45 +554,6 @@
     </main>
 </div>
 
-<script>
-(function () {
-    var wrap = document.getElementById('pushbox-sidebar-wrap');
-    var overlay = document.getElementById('pushbox-overlay');
-    var toggle = document.getElementById('pushbox-menu-toggle');
-    var iconMenu = document.getElementById('pushbox-icon-menu');
-    var iconClose = document.getElementById('pushbox-icon-close');
-    if (!wrap || !overlay || !toggle) return;
-
-    function setOpen(open) {
-        if (open) {
-            wrap.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-            if (iconMenu) iconMenu.classList.add('hidden');
-            if (iconClose) iconClose.classList.remove('hidden');
-            toggle.setAttribute('aria-label', 'Close menu');
-        } else {
-            wrap.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-            if (iconMenu) iconMenu.classList.remove('hidden');
-            if (iconClose) iconClose.classList.add('hidden');
-            toggle.setAttribute('aria-label', 'Open menu');
-        }
-    }
-
-    var mq = window.matchMedia('(min-width: 1024px)');
-    function onResize() {
-        if (mq.matches) setOpen(true);
-        else setOpen(false);
-    }
-
-    toggle.addEventListener('click', function () {
-        var open = wrap.classList.contains('-translate-x-full');
-        setOpen(open);
-    });
-    overlay.addEventListener('click', function () { setOpen(false); });
-    mq.addEventListener('change', onResize);
-    onResize();
-})();
-</script>
+<script>{!! $pushboxJs !!}</script>
 </body>
 </html>

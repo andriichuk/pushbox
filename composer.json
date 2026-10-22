@@ -25,22 +25,23 @@
     ],
     "require": {
         "php": "^8.4",
-        "illuminate/bus": "^11.0|^12.0|^13.0",
-        "illuminate/queue": "^11.0|^12.0|^13.0",
-        "illuminate/support": "^11.0|^12.0|^13.0",
-        "illuminate/contracts": "^11.0|^12.0|^13.0",
-        "illuminate/routing": "^11.0|^12.0|^13.0",
-        "illuminate/view": "^11.0|^12.0|^13.0",
-        "illuminate/database": "^11.0|^12.0|^13.0",
-        "illuminate/notifications": "^11.0|^12.0|^13.0",
-        "illuminate/http": "^11.0|^12.0|^13.0",
-        "illuminate/log": "^11.0|^12.0|^13.0"
+        "illuminate/bus": "^12.0|^13.0",
+        "illuminate/queue": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/view": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/notifications": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/log": "^12.0|^13.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.0",
         "laravel/pint": "^1.0",
-        "orchestra/testbench": "^9.0|^10.0|^11.0",
-        "phpunit/phpunit": "^11.0"
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.0",
+        "laravel-notification-channels/fcm": "^6.2"
     },
     "suggest": {
         "laravel-notification-channels/fcm": "Preview notifications that implement toFcm() with FcmMessage (Firebase / FCM)."
@@ -73,6 +74,24 @@
     "scripts": {
         "analyse": "phpstan analyse",
         "test": "phpunit",
-        "lint": "pint"
+        "lint": "pint",
+        "lint:check": "pint --test"
+    },
+    "archive": {
+        "exclude": [
+            "/.github",
+            "/tests",
+            "/scripts",
+            "/build",
+            "/node_modules",
+            "/package.json",
+            "/package-lock.json",
+            "/phpunit.xml",
+            "/phpstan.neon.dist",
+            "/vendor",
+            "/.phpunit.cache",
+            "/test-results",
+            "/playwright-report"
+        ]
     }
 }
