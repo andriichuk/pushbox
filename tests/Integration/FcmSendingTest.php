@@ -57,7 +57,7 @@ class FcmSendingTest extends TestCase
             self::assertSame(['test-device-token'], $tokens);
             self::assertSame($preview, $message->toArray());
             self::assertSame('Вітаю', $message->toArray()['notification']['title']);
-            self::assertSame('Ada uk', $message->toArray()['notification']['body']);
+            self::assertSame('Ada uk uk', $message->toArray()['notification']['body']);
 
             return true;
         })->andReturn(MulticastSendReport::withItems([
@@ -132,7 +132,7 @@ class TypedNotification extends Notification
 
     public function toFcm(TestRecipient $recipient): FcmMessage
     {
-        return new FcmMessage(notification: new FcmNotification(title: __('push.title'), body: $recipient->name.' '.$this->constructedLocale));
+        return new FcmMessage(notification: new FcmNotification(title: __('push.title'), body: $recipient->name.' '.$this->constructedLocale.' '.$this->locale));
     }
 }
 
