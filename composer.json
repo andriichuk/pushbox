@@ -76,5 +76,22 @@
         "test": "phpunit",
         "lint": "pint",
         "lint:check": "pint --test"
+    },
+    "archive": {
+        "exclude": [
+            "/.github",
+            "/tests",
+            "/scripts",
+            "/build",
+            "/node_modules",
+            "/package.json",
+            "/package-lock.json",
+            "/phpunit.xml",
+            "/phpstan.neon.dist",
+            "/vendor",
+            "/.phpunit.cache",
+            "/test-results",
+            "/playwright-report"
+        ]
     }
 }
