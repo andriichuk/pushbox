@@ -32,7 +32,7 @@ final class RecordPushboxFcmNotificationFailure
 
         if ($exception instanceof Throwable) {
             $message = $exception->getMessage();
-            $detail = $exception->getTraceAsString();
+            $detail = $message;
         } elseif (is_object($sendReport)) {
             $message = PushboxFcmSendOutcome::failureMessageFromSendReportItem($sendReport);
             $detail = FcmSendResponseFormatter::toDisplayString($sendReport);
@@ -47,6 +47,7 @@ final class RecordPushboxFcmNotificationFailure
 
         app()->instance('pushbox.send_report', [
             'ok' => false,
+            'status' => 'failed',
             'queue_connection' => 'sync',
             'duration_ms' => $durationMs,
             'target' => $capture->maskedTarget !== '' ? $capture->maskedTarget : null,

@@ -13,6 +13,14 @@ use RuntimeException;
 class PushboxFcmSendOutcomeTest extends TestCase
 {
     #[Test]
+    public function empty_or_unknown_responses_are_not_successful(): void
+    {
+        foreach ([new Collection, [], false, new \stdClass] as $response) {
+            $this->assertFalse(PushboxFcmSendOutcome::isSuccessfulResponse($response));
+        }
+    }
+
+    #[Test]
     public function null_response_is_not_successful(): void
     {
         $this->assertFalse(PushboxFcmSendOutcome::isSuccessfulResponse(null));

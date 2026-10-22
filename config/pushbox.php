@@ -19,7 +19,7 @@ return [
     | Local only
     |--------------------------------------------------------------------------
     |
-    | When true, routes are only registered in the local environment unless
+    | When true, routes are only available in local/testing, including cached routes, unless
     | you override with PUSHBOX_LOCAL_ONLY=false.
     |
     */
@@ -32,6 +32,7 @@ return [
     */
     'path' => env('PUSHBOX_PATH', 'pushbox'),
 
+    // Outside local/testing, the viewPushbox Gate must also authorize access.
     'middleware' => ['web'],
 
     /*
@@ -64,7 +65,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | When true, each preview runs inside a transaction that is rolled back
-    | after rendering (safe for factories that persist models).
+    | after resolution. Only the default DB connection is covered; external
+    | effects and registration-file side effects are not rolled back.
     |
     */
     'database_rollback' => env('PUSHBOX_DATABASE_ROLLBACK', false),
@@ -80,6 +82,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | Keep false unless you explicitly need Pushbox sends in staging.
+    | Non-local access still requires the viewPushbox Gate. Sends are
+    | limited to 10 per minute per IP address.
     |
     */
     'send_allow_non_local' => env('PUSHBOX_SEND_NON_LOCAL', false),

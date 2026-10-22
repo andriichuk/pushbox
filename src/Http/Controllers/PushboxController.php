@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PushboxController extends Controller
 {
@@ -20,31 +21,41 @@ class PushboxController extends Controller
 
     public function index(Request $request, Pushbox $pushbox): View
     {
-        $class = $request->query('class');
-        $variant = $request->query('variant');
-        $locale = $request->query('locale');
+        // The view also reads these query values when building links and forms.
+        foreach (['class', 'variant', 'locale'] as $key) {
+            $value = $request->query($key);
+            $request->query->set($key, is_string($value) ? $value : null);
+        }
 
-        $item = $pushbox->retrieve(
-            is_string($class) ? $class : null,
-            is_string($variant) ? $variant : null,
-            is_string($locale) ? $locale : null,
-            true,
-        );
+        $grouped = collect();
+        $item = null;
+        $payload = ['fcm' => null];
+        $previewError = null;
 
-        $payload = $item ? $pushbox->previewPayload($item) : ['fcm' => null];
+        try {
+            $grouped = $pushbox->groupedNotifications();
+            $item = $pushbox->retrieve($request->query('class'), $request->query('variant'), $request->query('locale'), true);
+            $payload = $item ? $pushbox->previewPayload($item) : $payload;
+        } catch (Throwable $exception) {
+            $previewError = $exception->getMessage();
+        }
 
         /** @var view-string $view */
         $view = 'pushbox::index';
 
         return view($view, [
-            'grouped' => $pushbox->groupedNotifications(),
+            'grouped' => $grouped,
             'selected' => $item,
             'payload' => $payload,
+            'previewError' => $previewError,
+            'selectedLocale' => $pushbox->getLocale() ?? app()->getLocale(),
             'locales' => (array) config('pushbox.locales', []),
             'send' => (array) config('pushbox.send', []),
             'sendAllowNonLocal' => (bool) config('pushbox.send_allow_non_local', false),
+            'fcmDriverAvailable' => class_exists(SendPushboxFcmNotificationJob::FCM_CHANNEL),
             'fcmDeviceToken' => $this->sessionDeviceToken($request),
             'fcmSendTargetHint' => $this->sendTargetLabel($request),
+            'fcmSendTargetHash' => hash('sha256', $this->resolvedSendToken($request)),
         ]);
     }
 
@@ -52,191 +63,139 @@ class PushboxController extends Controller
     {
         $validated = $request->validate([
             'fcm_token' => ['nullable', 'string', 'max:8192'],
-            'class' => ['nullable', 'string'],
-            'variant' => ['nullable', 'string'],
-            'locale' => ['nullable', 'string'],
+            ...$this->selectionRules(),
         ]);
 
-        $token = $this->persistFcmTokenToSession($request, $validated['fcm_token'] ?? null);
-
-        return redirect()
-            ->route('pushbox.index', array_filter([
-                'class' => $validated['class'] ?? null,
-                'variant' => $validated['variant'] ?? null,
-                'locale' => $validated['locale'] ?? null,
-            ]))
-            ->with('status', $token === '' ? 'Device token cleared.' : 'Device token saved for this session.');
-    }
-
-    public function send(Request $request, Pushbox $pushbox, Dispatcher $dispatcher): RedirectResponse
-    {
-        if (! (bool) config('pushbox.send.enabled', false)) {
-            abort(403);
-        }
-
-        if (! app()->isLocal() && ! (bool) config('pushbox.send_allow_non_local', false)) {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'class' => ['required', 'string'],
-            'variant' => ['nullable', 'string'],
-            'locale' => ['nullable', 'string'],
-            'fcm_token' => ['nullable', 'string', 'max:8192'],
-        ]);
-
-        $item = $pushbox->retrieve(
-            $validated['class'],
-            $validated['variant'] ?? null,
-            $validated['locale'] ?? null,
-            false,
-        );
-
-        if (! $item) {
-            return redirect()->route('pushbox.index')->withErrors(['pushbox' => 'Notification not found.']);
-        }
-
-        // Resolve before persisting: an empty POST must not wipe session before we read it for
-        // "field → session → env", and must not make an env token look like a deliberate send.
-        $token = $this->resolvedSendToken($request);
-        if ($token === '') {
-            return redirect()
-                ->route('pushbox.index', $request->only(['class', 'variant', 'locale']))
-                ->withErrors(['pushbox' => 'Set a device token in the FCM field (or configure PUSHBOX_FCM_TOKEN).']);
-        }
-
-        $this->persistFcmTokenToSession($request, $validated['fcm_token'] ?? null);
-
-        try {
-            $dispatcher->dispatch(
-                (new SendPushboxFcmNotificationJob(
-                    $token,
-                    $validated['class'],
-                    $validated['variant'] ?? null,
-                    $validated['locale'] ?? null,
-                ))->onConnection('sync'),
-            );
-        } catch (\Throwable $e) {
-            Log::error('pushbox.send_failed', [
-                'exception' => $e->getMessage(),
-                'channel' => 'fcm',
-                'class' => $validated['class'],
-            ]);
-
-            $failureReport = app()->bound('pushbox.send_report') ? app('pushbox.send_report') : null;
-            if (app()->bound('pushbox.send_report')) {
-                app()->forgetInstance('pushbox.send_report');
-            }
-
-            if (is_array($failureReport)) {
-                return redirect()
-                    ->route('pushbox.index', array_filter([
-                        'class' => $validated['class'],
-                        'variant' => $validated['variant'] ?? null,
-                        'locale' => $validated['locale'] ?? null,
-                    ]))
-                    ->with('pushbox_send_result', $failureReport)
-                    ->withInput($request->only('fcm_token'));
-            }
-
-            return redirect()
-                ->route('pushbox.index', $request->only(['class', 'variant', 'locale']))
-                ->withErrors(['pushbox' => 'Send failed: '.$e->getMessage()])
-                ->withInput($request->only('fcm_token'));
-        }
-
-        Log::info('pushbox.sent', [
-            'channel' => 'fcm',
-            'class' => $validated['class'],
-            'queue' => 'sync',
-        ]);
-
-        $sendReport = app()->bound('pushbox.send_report')
-            ? app('pushbox.send_report')
-            : null;
-        app()->forgetInstance('pushbox.send_report');
-
-        if (! is_array($sendReport)) {
-            $sendReport = [
-                'ok' => true,
-                'queue_connection' => 'sync',
-                'duration_ms' => null,
-                'target' => TokenMask::mask($token),
-                'notification_class' => $validated['class'],
-                'channel' => SendPushboxFcmNotificationJob::FCM_CHANNEL,
-                'response_text' => null,
-                'note' => 'No detailed report (the send job did not run).',
-            ];
-        }
-
-        $redirect = redirect()
-            ->route('pushbox.index', array_filter([
-                'class' => $validated['class'],
-                'variant' => $validated['variant'] ?? null,
-                'locale' => $validated['locale'] ?? null,
-            ]))
-            ->with('pushbox_send_result', $sendReport);
-
-        if (($sendReport['ok'] ?? false) === true) {
-            $redirect->with('status', 'Sent via sync queue.');
-        }
-
-        return $redirect;
-    }
-
-    private function resolvedSendToken(Request $request): string
-    {
-        $raw = $request->input('fcm_token');
-        if (is_string($raw)) {
-            $posted = trim($raw);
-            if ($posted !== '') {
-                return $posted;
-            }
-        }
-
-        $session = $this->sessionDeviceToken($request);
-        if ($session !== '') {
-            return $session;
-        }
-
-        return trim((string) config('pushbox.send.fcm.token', ''));
-    }
-
-    private function sessionDeviceToken(Request $request): string
-    {
-        $t = $request->session()->get(self::SESSION_FCM_DEVICE_TOKEN);
-
-        return is_string($t) ? trim($t) : '';
-    }
-
-    private function sendTargetLabel(Request $request): string
-    {
-        $fromSession = $this->sessionDeviceToken($request);
-        if ($fromSession !== '') {
-            return 'session · '.TokenMask::mask($fromSession);
-        }
-
-        $env = trim((string) config('pushbox.send.fcm.token', ''));
-        if ($env !== '') {
-            return 'env · '.TokenMask::mask($env);
-        }
-
-        return 'FCM token field (posted with Send)';
-    }
-
-    /**
-     * @return string Trimmed token, or empty string if cleared
-     */
-    private function persistFcmTokenToSession(Request $request, mixed $raw): string
-    {
-        $token = is_string($raw) ? trim($raw) : '';
-
+        $token = trim($validated['fcm_token'] ?? '');
         if ($token === '') {
             $request->session()->forget(self::SESSION_FCM_DEVICE_TOKEN);
         } else {
             $request->session()->put(self::SESSION_FCM_DEVICE_TOKEN, $token);
         }
 
-        return $token;
+        return $this->backToSelection($request)->with('status', $token === ''
+            ? 'Saved device token cleared. The configured default, if any, is now the send target.'
+            : 'Device token saved for this session. No notification was sent.');
+    }
+
+    public function clearDeviceToken(Request $request): RedirectResponse
+    {
+        $request->validate($this->selectionRules());
+        $request->session()->forget(self::SESSION_FCM_DEVICE_TOKEN);
+
+        return $this->backToSelection($request)
+            ->with('status', 'Saved device token cleared. No notification was sent.');
+    }
+
+    public function send(Request $request, Pushbox $pushbox, Dispatcher $dispatcher): RedirectResponse
+    {
+        abort_unless((bool) config('pushbox.send.enabled', false), 403);
+        abort_unless(app()->isLocal() || (bool) config('pushbox.send_allow_non_local', false), 403);
+
+        $validated = $request->validate([
+            ...$this->selectionRules(),
+            'class' => ['required', 'string', 'max:1024'],
+            'confirm_send' => ['accepted'],
+            'target_hash' => ['required', 'string', 'size:64'],
+            'fcm_token' => ['prohibited'],
+        ]);
+
+        $token = $this->resolvedSendToken($request);
+        if ($token === '') {
+            return $this->backToSelection($request)->withErrors(['pushbox' => 'Save a test device token or configure PUSHBOX_FCM_TOKEN before sending.']);
+        }
+
+        if (! hash_equals(hash('sha256', $token), $validated['target_hash'])) {
+            return $this->backToSelection($request)->withErrors(['pushbox' => 'The target changed. Review the displayed test device and confirm again.']);
+        }
+
+        app()->forgetInstance('pushbox.send_report');
+
+        try {
+            $dispatcher->dispatch((new SendPushboxFcmNotificationJob(
+                $token,
+                $validated['class'],
+                $validated['variant'] ?? null,
+                $validated['locale'] ?? null,
+            ))->onConnection('sync'));
+
+            $report = app()->bound('pushbox.send_report') ? app('pushbox.send_report') : null;
+        } catch (Throwable $exception) {
+            $report = [
+                'ok' => false,
+                'status' => 'failed',
+                'note' => str_replace($token, TokenMask::mask($token), $exception->getMessage()),
+            ];
+        } finally {
+            app()->forgetInstance('pushbox.send_report');
+        }
+
+        if (! is_array($report)) {
+            $report = ['ok' => false, 'status' => 'skipped', 'note' => 'The send job did not return a provider report.'];
+        }
+
+        $report += [
+            'queue_connection' => 'sync',
+            'duration_ms' => null,
+            'target' => TokenMask::mask($token),
+            'notification_class' => $validated['class'],
+            'channel' => SendPushboxFcmNotificationJob::FCM_CHANNEL,
+            'response_text' => null,
+        ];
+
+        $ok = ($report['ok'] ?? false) === true;
+        $status = $ok ? 'accepted' : ($report['status'] ?? 'failed');
+        Log::log($ok ? 'info' : 'warning', 'pushbox.'.$status, [
+            'channel' => 'fcm',
+            'class' => $validated['class'],
+            'target' => TokenMask::mask($token),
+            'queue' => 'sync',
+        ]);
+
+        $redirect = $this->backToSelection($request)->with('pushbox_send_result', $report);
+        if ($ok) {
+            $redirect->with('status', 'Accepted by FCM. Device delivery is not guaranteed.');
+        }
+
+        return $redirect;
+    }
+
+    /** @return array<string, list<string>> */
+    private function selectionRules(): array
+    {
+        return [
+            'class' => ['nullable', 'string', 'max:1024'],
+            'variant' => ['nullable', 'string', 'max:255'],
+            'locale' => ['nullable', 'string', 'max:32'],
+        ];
+    }
+
+    private function backToSelection(Request $request): RedirectResponse
+    {
+        return redirect()->route('pushbox.index', array_filter($request->only(['class', 'variant', 'locale'])));
+    }
+
+    private function resolvedSendToken(Request $request): string
+    {
+        return $this->sessionDeviceToken($request) ?: trim((string) config('pushbox.send.fcm.token', ''));
+    }
+
+    private function sessionDeviceToken(Request $request): string
+    {
+        $token = $request->session()->get(self::SESSION_FCM_DEVICE_TOKEN);
+
+        return is_string($token) ? trim($token) : '';
+    }
+
+    private function sendTargetLabel(Request $request): string
+    {
+        $session = $this->sessionDeviceToken($request);
+        if ($session !== '') {
+            return 'Saved device · '.TokenMask::mask($session);
+        }
+
+        $default = trim((string) config('pushbox.send.fcm.token', ''));
+
+        return $default !== '' ? 'Configured default · '.TokenMask::mask($default) : 'No test device configured';
     }
 }

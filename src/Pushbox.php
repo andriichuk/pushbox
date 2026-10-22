@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox;
 
-use Andriichuk\Pushbox\Exceptions\PushboxException;
 use Andriichuk\Pushbox\Preview\PreviewResolver;
 use Andriichuk\Pushbox\Registry\NotificationGroup;
 use Andriichuk\Pushbox\Registry\NotificationItem;
@@ -38,17 +37,17 @@ class Pushbox
 
     public function label(string $label): NotifyRegistrar
     {
-        return $this->registrar()->label($label);
+        return (clone $this->registrar())->label($label);
     }
 
     public function category(string $category): NotifyRegistrar
     {
-        return $this->registrar()->category($category);
+        return (clone $this->registrar())->category($category);
     }
 
     public function to(mixed $notifiable): NotifyRegistrar
     {
-        return $this->registrar()->to($notifiable);
+        return (clone $this->registrar())->to($notifiable);
     }
 
     private function registrar(): NotifyRegistrar
@@ -107,21 +106,26 @@ class Pushbox
         $filename = config('pushbox.route_file', base_path('routes/pushbox.php'));
 
         if (is_string($filename) && file_exists($filename)) {
-            include $filename;
-
             $this->hasCollected = true;
+
+            try {
+                include $filename;
+            } catch (\Throwable $exception) {
+                $this->collection = new Collection;
+                throw $exception;
+            }
         }
     }
 
     public function setLocale(mixed $locale): ?string
     {
         if (! is_string($locale) || $locale === '') {
-            return null;
+            return $this->locale = (string) config('app.locale', 'en');
         }
 
         $codes = $this->localeCodes();
         if ($codes !== [] && ! in_array($locale, $codes, true)) {
-            return null;
+            return $this->locale = (string) config('app.locale', 'en');
         }
 
         return $this->locale = $locale;
@@ -151,6 +155,11 @@ class Pushbox
         $this->activeRegistrar = $registrar;
     }
 
+    public function getRegistrar(): ?NotifyRegistrar
+    {
+        return $this->activeRegistrar;
+    }
+
     public function clearRegistrar(): void
     {
         $this->activeRegistrar = null;
@@ -161,7 +170,7 @@ class Pushbox
         $items = $this->notifications();
 
         if ($items->isEmpty()) {
-            throw new PushboxException('No Pushbox notifications registered');
+            return null;
         }
 
         $selected = null;
@@ -178,6 +187,7 @@ class Pushbox
             return null;
         }
 
+        $selected = clone $selected;
         $selected->selectVariant($variant);
 
         $this->setLocale($locale ?? (string) config('app.locale'));

@@ -1,0 +1,14 @@
+{
+  "name": "pushbox-assets",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-assets.mjs",
+    "test": "node --test tests/Browser/*.test.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "tailwindcss": "^4.1.0",
+    "@tailwindcss/node": "^4.3.3",
+    "@tailwindcss/oxide": "^4.3.3"
+  }
+}

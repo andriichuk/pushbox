@@ -50,11 +50,14 @@ class NotifyRegistrar
     {
         /** @var Pushbox $book */
         $book = app('pushbox');
+        $previous = $book->getRegistrar();
         $book->setRegistrar($this);
 
-        $callback();
-
-        $book->clearRegistrar();
+        try {
+            $callback();
+        } finally {
+            $book->setRegistrar($previous);
+        }
 
         return $this;
     }

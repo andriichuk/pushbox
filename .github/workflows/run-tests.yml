@@ -1,13 +1,13 @@
 name: run-tests
 
 on:
+  pull_request:
   push:
-    paths:
-      - '**.php'
-      - '.github/workflows/run-tests.yml'
-      - 'phpunit.xml'
-      - 'composer.json'
-      - 'composer.lock'
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,45 +16,57 @@ concurrency:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        php: [8.4]
-        laravel: [12.*, 11.*]
+        os: [ubuntu-latest]
+        php: ['8.4', '8.5']
+        laravel: ['12.*', '13.*']
         stability: [prefer-lowest, prefer-stable]
         include:
-          - laravel: 12.*
-            testbench: 10.*
-          - laravel: 11.*
-            testbench: 9.*
-
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
-
+          - os: windows-latest
+            php: '8.4'
+            laravel: '13.*'
+            stability: prefer-stable
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / ${{ matrix.stability }} / ${{ matrix.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, fileinfo
+          extensions: mbstring, dom, curl, sqlite, pdo_sqlite, bcmath
           coverage: none
-
-      - name: Setup problem matchers
+      - name: Resolve supported dependencies
+        shell: bash
         run: |
-          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+          if [[ '${{ matrix.laravel }}' == '12.*' ]]; then testbench='10.*'; else testbench='11.*'; fi
+          composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:$testbench" --no-update --no-interaction
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+      - run: composer audit
+      - run: composer test
 
-      - name: Install dependencies
-        run: |
-          composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-audit
+  without-fcm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, curl, sqlite, pdo_sqlite
+          coverage: none
+      - run: composer remove --dev laravel-notification-channels/fcm --no-update --no-interaction
+      - run: composer update --prefer-dist --no-interaction
+      - run: vendor/bin/phpunit --exclude-group fcm --exclude-group browser-fixture
 
-      - name: List Installed Dependencies
-        run: composer show -D
-
-      - name: Execute tests
-        run: vendor/bin/phpunit
+  tests:
+    name: tests
+    if: always()
+    needs: [test, without-fcm]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          MATRIX_RESULT: ${{ needs.test.result }}
+          OPTIONAL_RESULT: ${{ needs.without-fcm.result }}
+        run: test "$MATRIX_RESULT" = success && test "$OPTIONAL_RESULT" = success
