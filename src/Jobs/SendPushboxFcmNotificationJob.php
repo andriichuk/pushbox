@@ -8,6 +8,7 @@ use Andriichuk\Pushbox\Pushbox;
 use Andriichuk\Pushbox\Sending\FcmSendResponseFormatter;
 use Andriichuk\Pushbox\Sending\PendingFcmCapture;
 use Andriichuk\Pushbox\Sending\PushboxFcmSendOutcome;
+use Andriichuk\Pushbox\Sending\TestFcmNotification;
 use Andriichuk\Pushbox\Support\TokenMask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,10 +16,11 @@ use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Traits\Localizable;
 
 class SendPushboxFcmNotificationJob implements ShouldQueue
 {
-    use InteractsWithQueue, Queueable;
+    use InteractsWithQueue, Localizable, Queueable;
 
     public const FCM_CHANNEL = 'NotificationChannels\\Fcm\\FcmChannel';
 
@@ -52,6 +54,12 @@ class SendPushboxFcmNotificationJob implements ShouldQueue
 
     public function handle(Pushbox $pushbox): void
     {
+        app()->forgetInstance('pushbox.send_report');
+
+        if (! (bool) config('pushbox.send.enabled', false) || (! app()->isLocal() && ! (bool) config('pushbox.send_allow_non_local', false))) {
+            throw new \RuntimeException('Pushbox test sending is disabled in this environment.');
+        }
+
         $item = $pushbox->retrieve(
             $this->class,
             $this->variant,
@@ -63,13 +71,11 @@ class SendPushboxFcmNotificationJob implements ShouldQueue
             throw new \RuntimeException('Notification not found.');
         }
 
-        $notification = $item->resolve(app());
-
         if (! class_exists(self::FCM_CHANNEL)) {
             throw new \RuntimeException('laravel-notification-channels/fcm is not installed.');
         }
 
-        $notifiable = Notification::route(self::FCM_CHANNEL, $this->token);
+        $notifiable = Notification::route('fcm', $this->token);
 
         $capture = new PendingFcmCapture;
         $capture->startedAt = microtime(true);
@@ -78,7 +84,17 @@ class SendPushboxFcmNotificationJob implements ShouldQueue
         app()->instance(PendingFcmCapture::class, $capture);
 
         try {
-            Notification::sendNow($notifiable, $notification, [self::FCM_CHANNEL]);
+            $this->withLocale($pushbox->getLocale(), function () use ($item, $notifiable, $pushbox): void {
+                $notification = $item->resolve(app());
+                if (! method_exists($notification, 'toFcm')) {
+                    throw new \RuntimeException('The notification must implement toFcm().');
+                }
+
+                $notification->locale($pushbox->getLocale());
+                $testNotification = new TestFcmNotification($notification, $item->notifiable());
+                $testNotification->locale($pushbox->getLocale());
+                Notification::sendNow($notifiable, $testNotification, [self::FCM_CHANNEL]);
+            });
         } finally {
             app()->forgetInstance(PendingFcmCapture::class);
         }
@@ -96,7 +112,8 @@ class SendPushboxFcmNotificationJob implements ShouldQueue
                     : ($existing['response_text'] ?? $responseText);
                 app()->instance('pushbox.send_report', array_merge($existing, [
                     'duration_ms' => $existing['duration_ms'] ?? $durationMs,
-                    'response_text' => $mergedText,
+                    'response_text' => is_string($mergedText) ? str_replace($this->token, TokenMask::mask($this->token), $mergedText) : null,
+                    'note' => str_replace($this->token, TokenMask::mask($this->token), (string) ($existing['note'] ?? 'FCM rejected the message')),
                 ]));
 
                 return;
@@ -104,17 +121,18 @@ class SendPushboxFcmNotificationJob implements ShouldQueue
         }
 
         $ok = PushboxFcmSendOutcome::isSuccessfulResponse($capture->response);
-        $note = $ok ? null : (PushboxFcmSendOutcome::firstFailureMessage($capture->response) ?? 'FCM reported a send failure.');
+        $note = $ok ? null : (PushboxFcmSendOutcome::firstFailureMessage($capture->response) ?? 'FCM did not accept a message. The notification may have been skipped.');
 
         app()->instance('pushbox.send_report', [
             'ok' => $ok,
+            'status' => $ok ? 'accepted' : ($capture->response === null ? 'skipped' : 'failed'),
             'queue_connection' => (string) ($this->connection ?? 'sync'),
             'duration_ms' => $durationMs,
             'target' => $capture->maskedTarget,
             'notification_class' => $this->class,
             'channel' => self::FCM_CHANNEL,
-            'response_text' => $responseText,
-            'note' => $note,
+            'response_text' => str_replace($this->token, TokenMask::mask($this->token), $responseText),
+            'note' => is_string($note) ? str_replace($this->token, TokenMask::mask($this->token), $note) : null,
         ]);
     }
 }

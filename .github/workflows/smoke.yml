@@ -1,0 +1,32 @@
+name: smoke
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fresh-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        laravel: ['12', '13']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: bash scripts/smoke.sh '${{ matrix.laravel }}'
+  smoke:
+    name: smoke
+    if: always()
+    needs: fresh-app
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          SMOKE_RESULT: ${{ needs.fresh-app.result }}
+        run: test "$SMOKE_RESULT" = success

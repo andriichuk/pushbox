@@ -6,6 +6,7 @@ namespace Andriichuk\Pushbox\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsurePushboxEnabled
@@ -16,6 +17,14 @@ class EnsurePushboxEnabled
             abort(404);
         }
 
+        if (config('pushbox.local_only', true) && ! app()->environment(['local', 'testing'])) {
+            abort(404);
+        }
+
+        if (! app()->environment(['local', 'testing']) && ! Gate::allows('viewPushbox')) {
+            abort(403);
+        }
+
         $allowed = config('pushbox.allowed_ips', []);
         if (is_array($allowed) && $allowed !== []) {
             $ip = $request->ip();
@@ -24,6 +33,10 @@ class EnsurePushboxEnabled
             }
         }
 
-        return $next($request);
+        $response = $next($request);
+        $response->headers->set('Cache-Control', 'no-store, private');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+        return $response;
     }
 }

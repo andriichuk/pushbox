@@ -8,9 +8,12 @@ use Andriichuk\Pushbox\Pushbox;
 use Andriichuk\Pushbox\Registry\NotificationItem;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Traits\Localizable;
 
 class PreviewResolver
 {
+    use Localizable;
+
     public function __construct(
         private readonly Container $container,
         private readonly FcmPreviewNormalizer $fcmNormalizer,
@@ -44,19 +47,16 @@ class PreviewResolver
         $book = $this->container->make('pushbox');
         $locale = $book instanceof Pushbox ? $book->getLocale() : null;
 
-        if (is_string($locale) && $locale !== '') {
-            app()->setLocale($locale);
-        }
+        return $this->withLocale($locale, function () use ($item): array {
+            $notification = $item->resolve($this->container);
+            $notifiable = $item->notifiable() ?? new \stdClass;
 
-        $notification = $item->resolve($this->container);
-        $notifiable = $item->notifiable() ?? new \stdClass;
+            $fcm = null;
+            if (method_exists($notification, 'toFcm')) {
+                $fcm = $this->fcmNormalizer->normalize($notification->toFcm($notifiable));
+            }
 
-        $fcm = null;
-        if (method_exists($notification, 'toFcm')) {
-            $message = $notification->toFcm($notifiable);
-            $fcm = $this->fcmNormalizer->normalize($message);
-        }
-
-        return ['fcm' => $fcm];
+            return ['fcm' => $fcm];
+        });
     }
 }

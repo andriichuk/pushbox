@@ -64,7 +64,11 @@ class NotificationItem
 
     public function selectVariant(?string $variant): void
     {
-        $this->selectedVariant = $variant;
+        if ($variant !== null && $variant !== '' && ! isset($this->variants[$variant])) {
+            throw new PushboxException('Unknown notification variant: '.$variant);
+        }
+
+        $this->selectedVariant = $variant === '' ? null : $variant;
     }
 
     public function selectedVariant(): ?string

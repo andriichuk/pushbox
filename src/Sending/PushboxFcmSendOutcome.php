@@ -22,6 +22,10 @@ final class PushboxFcmSendOutcome
         }
 
         if ($response instanceof Collection) {
+            if ($response->isEmpty()) {
+                return false;
+            }
+
             foreach ($response as $chunkReport) {
                 if (! self::multicastReportIsFullySuccessful($chunkReport)) {
                     return false;
@@ -53,11 +57,16 @@ final class PushboxFcmSendOutcome
     private static function multicastReportIsFullySuccessful(mixed $report): bool
     {
         if (! is_object($report) || ! method_exists($report, 'getItems')) {
-            return true;
+            return false;
         }
 
-        foreach ($report->getItems() as $item) {
-            if (self::sendReportIsFailure($item)) {
+        $items = $report->getItems();
+        if ($items === []) {
+            return false;
+        }
+
+        foreach ($items as $item) {
+            if (! is_object($item) || ! method_exists($item, 'isFailure') || self::sendReportIsFailure($item)) {
                 return false;
             }
         }
