@@ -26,7 +26,7 @@
                         </div>
                         <span class="min-w-0 truncate text-[12px] font-medium text-white/80">{{ $appLabel }}</span>
                         <span class="shrink-0 whitespace-nowrap text-[11px] text-white/40">• now</span>
-                        <button type="button" class="pushbox-preview-chevron" data-toggle-preview aria-expanded="false" aria-label="Expand notification"><svg class="ml-auto h-4 w-4 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button>
+                        <button type="button" class="pushbox-preview-chevron" data-toggle-preview aria-expanded="false" aria-label="Expand notification"><svg class="h-4 w-4 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button>
                     </div>
                     <div class="pushbox-notification-content mt-3">
                         <div class="min-w-0 flex-1 space-y-2">
