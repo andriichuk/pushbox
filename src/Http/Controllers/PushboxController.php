@@ -56,6 +56,7 @@ class PushboxController extends Controller
             'fcmDeviceToken' => $this->sessionDeviceToken($request),
             'fcmSendTargetHint' => $this->sendTargetLabel($request),
             'fcmSendTargetHash' => hash('sha256', $this->resolvedSendToken($request)),
+            'hasSendTarget' => $this->resolvedSendToken($request) !== '',
         ]);
     }
 

@@ -109,7 +109,7 @@ Set `PUSHBOX_DATABASE_ROLLBACK=true` to wrap preview factory resolution and `toF
 
 1. Configure the Firebase Admin SDK using the channel's [installation instructions](https://github.com/laravel-notification-channels/fcm#installation). Usually this means setting `FIREBASE_CREDENTIALS` to an absolute service-account JSON path outside the public directory. Keep credentials out of Git. Use a dedicated test Firebase project.
 2. Obtain an FCM registration token from your test client (for example Firebase Messaging's `getToken()` on Android or Web, or `Messaging.messaging().token` on Apple platforms). The device token and service account must belong to the same Firebase project. Apple delivery also requires the project's APNs configuration and device permissions.
-3. Set `PUSHBOX_ALLOW_SEND=true` locally, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
+3. Set `PUSHBOX_ALLOW_SEND=true` locally, open **Device settings**, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
 4. Press **Send notification** to send immediately to the saved device token, or the configured default when no token is saved.
 
 Save and Clear never send. Sending uses the saved session token, then the configured default; it never changes a User's stored production token. Clearing a saved token reveals the configured default. A stale page cannot send to a newly changed target without reviewing it again.

@@ -83,12 +83,16 @@ class FcmSendingTest extends TestCase
             SendReport::failure(MessageTarget::with('token', 'test-device-token'), new InvalidMessage('Invalid token test-device-token')),
         ]));
         Log::spy();
-        $this->post('/pushbox/send', $this->sendData())
+        $this->withHeaders(['Accept' => 'text/html', 'X-Requested-With' => 'XMLHttpRequest'])
+            ->post('/pushbox/send', $this->sendData())
             ->assertSessionHas('pushbox_send_result.ok', false)
             ->assertSessionHas('pushbox_send_result.status', 'failed')
             ->assertSessionMissing('status');
         self::assertStringNotContainsString('test-device-token', json_encode(session('pushbox_send_result')));
         Log::shouldHaveReceived('log')->once()->with('warning', 'pushbox.failed', Mockery::type('array'));
+        $this->get('/pushbox?'.http_build_query(['class' => TypedNotification::class]))
+            ->assertOk()->assertSee('id="pushbox-send-feedback"', false)
+            ->assertSee('Device token rejected')->assertSee('Technical details');
     }
 
     public function test_provider_exception_restores_locale_and_cleans_capture(): void
