@@ -8,6 +8,7 @@ use Andriichuk\Pushbox\Facades\Pushbox;
 use Andriichuk\Pushbox\Registry\NotificationItem;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
+use RuntimeException;
 
 class RegistryLifecycleTest extends TestCase
 {
@@ -18,9 +19,9 @@ class RegistryLifecycleTest extends TestCase
             try {
                 Pushbox::category('Inner')->group(function (): void {
                     Pushbox::add(ExampleNotification::class);
-                    throw new \RuntimeException('Broken group');
+                    throw new RuntimeException('Broken group');
                 });
-            } catch (\RuntimeException) {
+            } catch (RuntimeException) {
             }
             Pushbox::add(ExampleNotification::class);
         });

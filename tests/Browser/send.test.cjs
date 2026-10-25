@@ -8,14 +8,20 @@ const { createServer } = require('node:http');
 // Render the real Blade views; the local server stubs transport, never Firebase.
 test('workspace navigation, device settings, sending feedback, preview states, and copying', async () => {
   execFileSync('php', ['vendor/bin/phpunit', '--group', 'browser-fixture'], { stdio: 'pipe' });
-  const fixtures = Object.fromEntries(['notification', 'empty', 'no-device', 'failed', 'accepted', 'saved-device'].map(name => [name, readFileSync(`build/browser/${name}.html`, 'utf8')]));
+  const fixtures = Object.fromEntries(['notification', 'empty', 'no-device', 'failed', 'accepted', 'saved-device', 'image', 'broken-image'].map(name => [name, readFileSync(`build/browser/${name}.html`, 'utf8')]));
   const posts = [];
   let sendMode = 'failed';
   let base;
   const server = createServer((req, res) => {
+    if (req.url === '/notification-image.svg') {
+      res.writeHead(200, { 'content-type': 'image/svg+xml' });
+      res.end('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#345e78"/></svg>');
+      return;
+    }
+    if (req.url === '/missing-image.svg') { res.writeHead(404); res.end(); return; }
     const isSend = req.method === 'POST' && req.url === '/pushbox/send';
     if (req.method === 'POST') posts.push(req.url);
-    const name = isSend ? sendMode : req.url === '/empty' ? 'empty' : req.url === '/no-device' ? 'no-device' : req.url === '/saved-device' ? 'saved-device' : 'notification';
+    const name = isSend ? sendMode : req.url === '/image' ? 'image' : req.url === '/broken-image' ? 'broken-image' : req.url === '/empty' ? 'empty' : req.url === '/no-device' ? 'no-device' : req.url === '/saved-device' ? 'saved-device' : 'notification';
     setTimeout(() => {
       if (isSend && sendMode === 'limited') { res.writeHead(429); res.end('Too many attempts'); return; }
       res.writeHead(200, { 'content-type': 'text/html' });
@@ -42,6 +48,7 @@ test('workspace navigation, device settings, sending feedback, preview states, a
       return route.continue();
     });
     await page.goto(base + '/pushbox');
+    assert.equal(await page.locator('.pushbox-phone img').count(), 0);
     assert.equal(await page.getByRole('button', { name: 'Send notification', exact: true }).isEnabled(), true);
     assert.equal(await page.getByRole('checkbox').count(), 0);
     assert.equal(await page.getByText('Target:', { exact: false }).count(), 0);
@@ -132,6 +139,24 @@ test('workspace navigation, device settings, sending feedback, preview states, a
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#pushbox-main').evaluate(el => el.inert), false);
     await page.screenshot({ path: 'build/browser/workspace-mobile.png', fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(base + '/image');
+    await page.getByRole('button', { name: 'Collapsed', exact: true }).click();
+    await page.waitForFunction(() => { const image = document.querySelector('.pushbox-image-thumbnail img'); return image.complete && image.naturalWidth > 0; });
+    assert.equal(await page.getByAltText('Notification image thumbnail', { exact: true }).isVisible(), true);
+    assert.equal(await page.getByAltText('Notification image preview', { exact: true }).isVisible(), false);
+    assert.equal(await page.getByAltText('Notification image', { exact: true }).getAttribute('referrerpolicy'), 'no-referrer');
+    await page.getByRole('button', { name: 'Expanded', exact: true }).click();
+    await page.waitForFunction(() => { const image = document.querySelector('.pushbox-image-expanded img'); return image.complete && image.naturalWidth > 0; });
+    assert.equal(await page.getByAltText('Notification image preview', { exact: true }).isVisible(), true);
+    assert.equal(await page.getByAltText('Notification image thumbnail', { exact: true }).isVisible(), false);
+    assert.match(await page.locator('#pushbox-preview-note').textContent(), /content and image/);
+    await page.screenshot({ path: 'build/browser/workspace-image.png', fullPage: true });
+    await page.goto(base + '/broken-image');
+    await page.getByRole('button', { name: 'Expanded', exact: true }).click();
+    await page.locator('.pushbox-image-expanded .pushbox-image-error').waitFor({ state: 'visible' });
+    assert.equal(await page.getByAltText('Notification image preview', { exact: true }).isVisible(), false);
+    assert.equal(await page.locator('[data-preview-body]').isVisible(), true);
     await page.goto(base + '/empty');
     assert.equal(await page.getByRole('heading', { name: 'Register your first notification' }).count(), 1);
     assert.equal(await page.getByRole('button', { name: 'Send notification', exact: true }).count(), 0);

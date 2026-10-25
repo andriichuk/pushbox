@@ -6,7 +6,7 @@
 
 Preview Laravel FCM notification payloads, compare variants and translations, and send a deliberate test notification to your own device. Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
-![Pushbox preview and separate test-device controls](docs/images/preview.png)
+![Pushbox notification workspace with Android preview](docs/images/preview.png)
 
 **This branch prepares the next major release (2.0).** The published 1.x package has different behavior. This version supports **PHP 8.4/8.5 and Laravel 12/13**. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**. Laravel 11 support has been removed.
 
@@ -71,7 +71,7 @@ Pushbox::add(WelcomePush::class);
 
 Run the application locally and open `/pushbox`. Previewing calls `toFcm()` and serializes its result; Pushbox makes no Firebase request during preview. Your own factories and notification methods can still have side effects. The package can also preview objects exposing `toArray()` without installing the FCM driver.
 
-The device cards are visual approximations. Actual iOS/Android rendering, foreground behavior, permissions, and data-only messages depend on the client application and OS.
+The Android preview is a visual approximation. It shows a thumbnail for collapsed notifications and a larger image when expanded, when the payload includes an image. Actual rendering, foreground behavior, permissions, and data-only messages depend on the client application and OS.
 
 ## Recipients, categories, variants, and translations
 
@@ -114,7 +114,7 @@ Set `PUSHBOX_DATABASE_ROLLBACK=true` to wrap preview factory resolution and `toF
 
 Save and Clear never send. Sending uses the saved session token, then the configured default; it never changes a User's stored production token. Clearing a saved token reveals the configured default. A stale page cannot send to a newly changed target without reviewing it again.
 
-Test sends run synchronously on the FCM channel only, regardless of `via()` or `ShouldQueue` on your application notification. Pushbox wraps the notification to preserve its recipient-dependent content while routing delivery to the test device. Its `shouldSend()` veto is respected. Application notification events for a test send refer to this wrapper. Pushbox does not invoke other channels.
+Test sends call the FCM channel synchronously without dispatching queue jobs, regardless of `via()` or `ShouldQueue` on your application notification. Pushbox wraps the notification to preserve its recipient-dependent content while routing delivery to the test device. Its `shouldSend()` veto is respected. Application notification events for a test send refer to this wrapper. Pushbox does not invoke other channels.
 
 Reports distinguish **accepted**, **failed**, and **skipped**. FCM acceptance does not guarantee receipt. Structured reports include provider message IDs where available and mask the test token. Logs use `pushbox.accepted`, `pushbox.failed`, or `pushbox.skipped`; they do not contain the raw token.
 

@@ -20,7 +20,7 @@
     </header>
     <div id="pushbox-overlay" class="pushbox-overlay hidden" aria-hidden="true"></div>
     <aside id="pushbox-sidebar-wrap" class="pushbox-sidebar -translate-x-full" aria-label="Notification library">
-        <a class="pushbox-brand pushbox-desktop-brand" href="{{ route('pushbox.index') }}"><span class="pushbox-brand-icon">@include('pushbox::logo')</span>Pushbox<span class="pushbox-brand-caption">Notification studio</span></a>
+        <a class="pushbox-brand pushbox-desktop-brand" href="{{ route('pushbox.index') }}"><span class="pushbox-brand-icon">@include('pushbox::logo')</span><span class="pushbox-brand-text"><span>Pushbox</span><span class="pushbox-brand-caption">Notification studio</span></span></a>
         <label class="pushbox-search" for="pushbox-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg>
             <input id="pushbox-search" type="search" aria-label="Search notifications" placeholder="Find a notification" autocomplete="off" aria-keyshortcuts="/">
@@ -124,7 +124,7 @@
                         <section class="pushbox-panel" aria-labelledby="pushbox-alert-heading">
                             <h2 id="pushbox-alert-heading">Notification content</h2>
                             <dl class="pushbox-content-fields"><div><dt>Title</dt><dd>{{ $alertTitle ?: 'Not set' }}</dd></div><div><dt>Body</dt><dd>{{ $alertBody ?: 'Not set' }}</dd></div></dl>
-                            @if($alertImage)<figure class="pushbox-payload-image"><img src="{{ $alertImage }}" alt="Notification image" loading="lazy"><figcaption>{{ $alertImage }}</figcaption></figure>@endif
+                            @if($alertImage)<figure class="pushbox-payload-image">@include('pushbox::notification-image', ['imageUrl' => $alertImage, 'imageAlt' => 'Notification image'])<figcaption>{{ $alertImage }}</figcaption></figure>@endif
                         </section>
                         @if(count($dataRows) > 0)
                             <section class="pushbox-panel pushbox-data-panel" aria-labelledby="pushbox-data-heading"><h2 id="pushbox-data-heading">Data payload <span class="pushbox-count">{{ count($dataRows) }}</span></h2><div class="pushbox-table-wrap"><table class="pushbox-data-table"><thead><tr><th scope="col">Key</th><th scope="col">Value</th><th scope="col"><span class="pushbox-sr-only">Actions</span></th></tr></thead><tbody>@foreach($dataRows as $key => $value) @php($displayValue = is_string($value) ? $value : json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))<tr><th scope="row"><code>{{ $key }}</code></th><td><code>{{ $displayValue }}</code></td><td><button type="button" class="pushbox-copy" data-copy-value="{{ $displayValue }}" data-copy-label="{{ $key }} value" aria-label="Copy {{ $key }} value">Copy</button></td></tr>@endforeach</tbody></table></div></section>

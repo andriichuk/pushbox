@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox\Tests\Integration;
 
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
 use Andriichuk\Pushbox\Pushbox;
-use Andriichuk\Pushbox\Sending\PendingFcmCapture;
+use Andriichuk\Pushbox\Sending\SendFcmNotification;
+use Andriichuk\Pushbox\Sending\TestFcmNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
+use Illuminate\Support\Facades\Queue;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Exception\Messaging\InvalidMessage;
 use Kreait\Firebase\Messaging\MessageTarget;
@@ -22,7 +28,9 @@ use Mockery;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use RuntimeException;
 
 #[Group('fcm')]
 class FcmSendingTest extends TestCase
@@ -71,8 +79,6 @@ class FcmSendingTest extends TestCase
         self::assertSame('en', app()->getLocale());
         self::assertSame(['production-device'], $recipient->routeNotificationFor('fcm'));
         self::assertStringContainsString('projects/test/messages/123', session('pushbox_send_result')['response_text']);
-        self::assertFalse(app()->bound(PendingFcmCapture::class));
-        self::assertFalse(app()->bound('pushbox.send_report'));
         Log::shouldHaveReceived('log')->once()->with('info', 'pushbox.accepted', Mockery::type('array'));
     }
 
@@ -91,19 +97,18 @@ class FcmSendingTest extends TestCase
         self::assertStringNotContainsString('test-device-token', json_encode(session('pushbox_send_result')));
         Log::shouldHaveReceived('log')->once()->with('warning', 'pushbox.failed', Mockery::type('array'));
         $this->get('/pushbox?'.http_build_query(['class' => TypedNotification::class]))
-            ->assertOk()->assertSee('id="pushbox-send-feedback"', false)
+            ->assertOk()->assertViewHas('previewError', null)->assertSee('id="pushbox-send-feedback"', false)
             ->assertSee('Device token rejected')->assertSee('Technical details');
     }
 
     public function test_provider_exception_restores_locale_and_cleans_capture(): void
     {
         [, , $client] = $this->prepare();
-        $client->shouldReceive('sendMulticast')->once()->andThrow(new \RuntimeException('Provider unavailable'));
+        $client->shouldReceive('sendMulticast')->once()->andThrow(new RuntimeException('Provider unavailable'));
         $this->post('/pushbox/send', $this->sendData('uk'))
             ->assertSessionHas('pushbox_send_result.ok', false)
             ->assertSessionHas('pushbox_send_result.note', 'Provider unavailable');
         self::assertSame('en', app()->getLocale());
-        self::assertFalse(app()->bound(PendingFcmCapture::class));
     }
 
     public function test_notification_veto_is_skipped_and_never_calls_firebase(): void
@@ -111,10 +116,110 @@ class FcmSendingTest extends TestCase
         [$book, $recipient, $client] = $this->prepare();
         $book->to($recipient)->add(fn (): VetoNotification => new VetoNotification('en'));
         $client->shouldNotReceive('sendMulticast');
-        (new SendPushboxFcmNotificationJob('test-device-token', VetoNotification::class, null, 'uk'))->handle($book);
-        self::assertFalse(app('pushbox.send_report')['ok']);
-        self::assertSame('skipped', app('pushbox.send_report')['status']);
+        $report = app(SendFcmNotification::class)->send('test-device-token', VetoNotification::class, null, 'uk');
+        self::assertFalse($report['ok']);
+        self::assertSame('skipped', $report['status']);
         self::assertSame('en', app()->getLocale());
+    }
+
+    public function test_test_send_is_immediate_even_when_the_sync_queue_defers_until_commit(): void
+    {
+        config([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.database' => ':memory:',
+            'queue.connections.sync.after_commit' => true,
+        ]);
+        DB::purge('sqlite');
+        Queue::fake();
+        [, , $client] = $this->prepare();
+        $sendCount = 0;
+        $client->shouldReceive('sendMulticast')->once()->andReturnUsing(function () use (&$sendCount): MulticastSendReport {
+            $sendCount++;
+
+            return MulticastSendReport::withItems([
+                SendReport::success(MessageTarget::with('token', 'test-device-token'), ['name' => 'projects/test/messages/immediate']),
+            ]);
+        });
+        DB::beginTransaction();
+
+        try {
+            $this->post('/pushbox/send', $this->sendData())
+                ->assertSessionHas('pushbox_send_result.ok', true)
+                ->assertSessionHas('pushbox_send_result.status', 'accepted');
+
+            self::assertSame(1, $sendCount);
+            DB::commit();
+            self::assertSame(1, $sendCount);
+            Queue::assertNothingPushed();
+        } finally {
+            DB::rollBack(0);
+        }
+    }
+
+    public function test_nested_test_sends_keep_their_own_results(): void
+    {
+        [, , $client] = $this->prepare();
+        $client->shouldReceive('sendMulticast')->once()->withArgs(fn ($message, $tokens): bool => $tokens === ['test-device-token'])
+            ->andReturn(MulticastSendReport::withItems([
+                SendReport::success(MessageTarget::with('token', 'test-device-token'), ['name' => 'projects/test/messages/outer']),
+            ]));
+        $client->shouldReceive('sendMulticast')->once()->withArgs(fn ($message, $tokens): bool => $tokens === ['nested-device-token'])
+            ->andReturn(MulticastSendReport::withItems([
+                SendReport::failure(MessageTarget::with('token', 'nested-device-token'), new InvalidMessage('Nested send failed')),
+            ]));
+        $nestedReport = null;
+        $nested = false;
+        Event::listen(NotificationSent::class, function (NotificationSent $event) use (&$nested, &$nestedReport): void {
+            if ($event->notification instanceof TestFcmNotification && ! $nested) {
+                $nested = true;
+                $nestedReport = app(SendFcmNotification::class)->send('nested-device-token', TypedNotification::class);
+            }
+        });
+
+        $report = app(SendFcmNotification::class)->send('test-device-token', TypedNotification::class);
+
+        self::assertTrue($report['ok']);
+        self::assertStringContainsString('projects/test/messages/outer', $report['response_text']);
+        self::assertFalse($nestedReport['ok']);
+        self::assertSame('Nested send failed', $nestedReport['note']);
+    }
+
+    /** @return array<string, array{bool}> */
+    public static function secondaryNotificationOutcomes(): array
+    {
+        return [
+            'accepted secondary notification' => [false],
+            'failed secondary notification' => [true],
+        ];
+    }
+
+    #[DataProvider('secondaryNotificationOutcomes')]
+    public function test_secondary_fcm_notifications_do_not_replace_the_test_send_result(bool $secondaryFails): void
+    {
+        [, $recipient, $client] = $this->prepare();
+        $client->shouldReceive('sendMulticast')->once()->withArgs(fn ($message, $tokens): bool => $tokens === ['test-device-token'])
+            ->andReturn(MulticastSendReport::withItems([
+                SendReport::success(MessageTarget::with('token', 'test-device-token'), ['name' => 'projects/test/messages/actual-test-send']),
+            ]));
+        $secondaryTarget = MessageTarget::with('token', 'production-device');
+        $secondaryReport = $secondaryFails
+            ? SendReport::failure($secondaryTarget, new InvalidMessage('Secondary notification failed'))
+            : SendReport::success($secondaryTarget, ['name' => 'projects/test/messages/secondary-notification']);
+        $client->shouldReceive('sendMulticast')->once()->withArgs(fn ($message, $tokens): bool => $tokens === ['production-device'])
+            ->andReturn(MulticastSendReport::withItems([$secondaryReport]));
+        Event::listen(NotificationSent::class, function (NotificationSent $event) use ($recipient): void {
+            if ($event->notification instanceof TestFcmNotification) {
+                NotificationFacade::sendNow($recipient, new TypedNotification('en'), [FcmChannel::class]);
+            }
+        });
+
+        $this->post('/pushbox/send', $this->sendData())
+            ->assertSessionHas('pushbox_send_result.ok', true)
+            ->assertSessionHas('pushbox_send_result.status', 'accepted');
+
+        $response = session('pushbox_send_result.response_text');
+        self::assertStringContainsString('projects/test/messages/actual-test-send', $response);
+        self::assertStringNotContainsString('secondary-notification', $response);
     }
 }
 
@@ -130,7 +235,7 @@ class TestRecipient extends Model
     }
 }
 
-class TypedNotification extends Notification
+class TypedNotification extends Notification implements ShouldQueue
 {
     public function __construct(private string $constructedLocale) {}
 

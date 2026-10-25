@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox\Tests\Feature;
 
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
 use Andriichuk\Pushbox\Pushbox;
+use Andriichuk\Pushbox\Sending\SendFcmNotification;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
 
@@ -13,7 +13,7 @@ class OptionalDriverTest extends TestCase
 {
     public function test_preview_and_send_diagnostic_without_optional_driver(): void
     {
-        if (class_exists(SendPushboxFcmNotificationJob::FCM_CHANNEL)) {
+        if (class_exists(SendFcmNotification::FCM_CHANNEL)) {
             self::markTestSkipped('Executed in the CI lane without the optional FCM package.');
         }
         app(Pushbox::class)->add(ExampleNotification::class);

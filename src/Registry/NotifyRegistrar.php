@@ -48,15 +48,15 @@ class NotifyRegistrar
 
     public function group(Closure $callback): self
     {
-        /** @var Pushbox $book */
-        $book = app('pushbox');
-        $previous = $book->getRegistrar();
-        $book->setRegistrar($this);
+        /** @var Pushbox $pushbox */
+        $pushbox = app('pushbox');
+        $previousRegistrar = $pushbox->getRegistrar();
+        $pushbox->setRegistrar($this);
 
         try {
             $callback();
         } finally {
-            $book->setRegistrar($previous);
+            $pushbox->setRegistrar($previousRegistrar);
         }
 
         return $this;

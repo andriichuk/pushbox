@@ -109,7 +109,10 @@
         }
         var truncated = Array.from(phone.querySelectorAll('[data-preview-title], [data-preview-body]')).some(function (text) { return text.scrollHeight > text.clientHeight + 1; });
         var note = document.getElementById('pushbox-preview-note');
-        if (note) note.textContent = expanded ? 'Expanded preview · Full notification content.' : (truncated ? 'Collapsed preview · Some text is truncated. Expand to read it all.' : 'Collapsed notification preview.');
+        var hasImage = phone.querySelector('[data-notification-image]') !== null;
+        if (note) note.textContent = expanded
+            ? (hasImage ? 'Expanded preview · Full notification content and image.' : 'Expanded preview · Full notification content.')
+            : (hasImage ? 'Collapsed preview · Expand to see the full notification and image.' : (truncated ? 'Collapsed preview · Some text is truncated. Expand to read it all.' : 'Collapsed notification preview.'));
     }
     document.querySelectorAll('[data-preview-state]').forEach(function (button) {
         button.addEventListener('click', function () { setPreviewExpanded(button.dataset.previewState === 'true'); saveWorkspace(); });
@@ -118,6 +121,15 @@
     if (previewToggle) previewToggle.addEventListener('click', function () { setPreviewExpanded(phone.dataset.expanded !== 'true'); saveWorkspace(); });
     setPreviewExpanded(saved.expanded === true);
     window.addEventListener('resize', function () { if (phone) setPreviewExpanded(phone.dataset.expanded === 'true'); });
+
+    document.querySelectorAll('[data-notification-image]').forEach(function (image) {
+        function showImageError() {
+            image.hidden = true;
+            image.closest('[data-pushbox-image]').querySelector('.pushbox-image-error').hidden = false;
+        }
+        image.addEventListener('error', showImageError);
+        if (image.complete && image.naturalWidth === 0) showImageError();
+    });
 
     var deviceOpener = null;
     function openDevice(opener) {

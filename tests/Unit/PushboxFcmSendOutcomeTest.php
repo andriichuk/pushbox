@@ -9,13 +9,14 @@ use Andriichuk\Pushbox\Tests\TestCase;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use stdClass;
 
 class PushboxFcmSendOutcomeTest extends TestCase
 {
     #[Test]
     public function empty_or_unknown_responses_are_not_successful(): void
     {
-        foreach ([new Collection, [], false, new \stdClass] as $response) {
+        foreach ([new Collection, [], false, new stdClass] as $response) {
             $this->assertFalse(PushboxFcmSendOutcome::isSuccessfulResponse($response));
         }
     }

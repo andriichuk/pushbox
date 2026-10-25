@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Andriichuk\Pushbox\Sending;
 
 use Illuminate\Notifications\Notification;
+use RuntimeException;
 
 /**
  * Keep the registered recipient available to notification content while the FCM
@@ -15,12 +16,13 @@ final class TestFcmNotification extends Notification
     public function __construct(
         private readonly Notification $notification,
         private readonly mixed $recipient,
+        public readonly FcmSendCapture $capture,
     ) {}
 
     public function toFcm(mixed $target): mixed
     {
         if (! method_exists($this->notification, 'toFcm')) {
-            throw new \RuntimeException('The notification must implement toFcm().');
+            throw new RuntimeException('The notification must implement toFcm().');
         }
 
         return $this->notification->toFcm($this->recipient ?? $target);

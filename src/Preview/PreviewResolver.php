@@ -9,6 +9,7 @@ use Andriichuk\Pushbox\Registry\NotificationItem;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Localizable;
+use stdClass;
 
 class PreviewResolver
 {
@@ -27,12 +28,14 @@ class PreviewResolver
         $rollback = (bool) config('pushbox.database_rollback', false);
 
         if ($rollback) {
-            DB::beginTransaction();
+            $connection = DB::connection();
+            $transactionLevel = $connection->transactionLevel();
+            $connection->beginTransaction();
 
             try {
                 return $this->resolveWithoutTransaction($item);
             } finally {
-                DB::rollBack();
+                $connection->rollBack($transactionLevel);
             }
         }
 
@@ -44,13 +47,12 @@ class PreviewResolver
      */
     private function resolveWithoutTransaction(NotificationItem $item): array
     {
-        $book = $this->container->make('pushbox');
-        $locale = $book instanceof Pushbox ? $book->getLocale() : null;
+        $locale = $this->container->make(Pushbox::class)->getLocale();
 
         return $this->withLocale($locale, function () use ($item, $locale): array {
             $notification = clone $item->resolve($this->container);
             $notification->locale($locale);
-            $notifiable = $item->notifiable() ?? new \stdClass;
+            $notifiable = $item->notifiable() ?? new stdClass;
 
             $fcm = null;
             if (method_exists($notification, 'toFcm')) {

@@ -15,13 +15,13 @@ class FcmPreviewNormalizer
     public function normalize(mixed $message): array
     {
         if (is_object($message) && method_exists($message, 'toArray')) {
-            /** @var array<string, mixed> $arr */
-            $arr = $message->toArray();
+            /** @var array<string, mixed> $structured */
+            $structured = $message->toArray();
 
             return [
-                'structured' => $arr,
-                'json' => json_encode($arr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
-                'display' => FcmDisplayExtractor::fromStructured($arr),
+                'structured' => $structured,
+                'json' => json_encode($structured, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+                'display' => FcmDisplayExtractor::fromStructured($structured),
             ];
         }
 

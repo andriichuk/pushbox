@@ -8,6 +8,8 @@ use Andriichuk\Pushbox\Exceptions\PushboxException;
 use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Notifications\Notification;
+use ReflectionFunction;
+use ReflectionNamedType;
 
 class NotificationItem
 {
@@ -113,9 +115,10 @@ class NotificationItem
      */
     private static function inferClassName(Closure $factory): string
     {
-        $r = new \ReflectionFunction($factory);
-        $returnType = $r->getReturnType();
-        if ($returnType instanceof \ReflectionNamedType && ! $returnType->isBuiltin()) {
+        $reflection = new ReflectionFunction($factory);
+        $returnType = $reflection->getReturnType();
+
+        if ($returnType instanceof ReflectionNamedType && ! $returnType->isBuiltin()) {
             return $returnType->getName();
         }
 
