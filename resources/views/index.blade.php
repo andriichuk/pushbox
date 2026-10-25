@@ -53,7 +53,7 @@
                     $dTitle = $display['title'] ?? null;
                     $dBody = $display['body'] ?? null;
                     $dImage = $display['image'] ?? null;
-                    $appLabel = config('app.name', 'App');
+                    $appLabel = config('pushbox.preview_app_name') ?: config('app.name', 'App');
                     $structured = $fcm['structured'] ?? [];
                     $notification = $structured['notification'] ?? [];
                     $alertTitle = $notification['title'] ?? $dTitle;

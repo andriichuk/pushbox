@@ -45,6 +45,9 @@ return [
     */
     'route_file' => base_path('routes/pushbox.php'),
 
+    // Override the app label shown in device previews.
+    'preview_app_name' => null,
+
     /*
     |--------------------------------------------------------------------------
     | Locales

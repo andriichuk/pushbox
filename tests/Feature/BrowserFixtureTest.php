@@ -24,8 +24,8 @@ class BrowserFixtureTest extends TestCase
         app(Pushbox::class)->category('Orders')->label('Order shipped')->add(BrowserOrderNotification::class)
             ->variant('Long message', fn (): BrowserOrderNotification => new BrowserOrderNotification);
         app(Pushbox::class)->category('Payments')->label('Payment received')->add(ExampleNotification::class);
-        config(['app.name' => 'Lunar Demo Store', 'pushbox.locales' => ['en' => 'English'], 'pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'browser-test-device']);
-        file_put_contents($directory.'/notification.html', $this->get('/pushbox')->assertOk()->getContent());
+        config(['app.name' => 'Consumer app name', 'pushbox.preview_app_name' => 'Demo Store', 'pushbox.locales' => ['en' => 'English'], 'pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'browser-test-device']);
+        file_put_contents($directory.'/notification.html', $this->get('/pushbox')->assertOk()->assertSeeText('Demo Store')->assertDontSeeText('Consumer app name')->getContent());
         $otherNotification = route('pushbox.index', ['class' => ExampleNotification::class, 'locale' => 'en']);
         $this->get('/pushbox?'.http_build_query(['class' => BrowserOrderNotification::class, 'variant' => 'Long message', 'locale' => 'en']))
             ->assertOk()->assertSee($otherNotification);
@@ -60,10 +60,10 @@ class BrowserOrderNotification extends ExampleNotification
     {
         return new FakeFcmMessage([
             'notification' => [
-                'title' => 'Your order #LUN-2026-1042-GIFT-ORDER has shipped',
+                'title' => 'Your order #ORD-2026-1042-GIFT-ORDER has shipped',
                 'body' => 'DHL has your parcel. Estimated delivery: 2-3 business days. We will send another update when it reaches your local delivery office. Track your order for the latest updates.',
             ],
-            'data' => ['event' => 'order.shipped', 'reference' => 'LUN-2026-1042-GIFT-ORDER'],
+            'data' => ['event' => 'order.shipped', 'reference' => 'ORD-2026-1042-GIFT-ORDER'],
             'android' => ['ttl' => '86400s'],
         ]);
     }
