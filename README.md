@@ -107,6 +107,8 @@ Set `PUSHBOX_DATABASE_ROLLBACK=true` to wrap preview factory resolution and `toF
 
 ## Send to a test device
 
+For a minimal Android receiver that registers its token with a local demo server, see the [Flutter companion app](examples/flutter/README.md).
+
 1. Configure the Firebase Admin SDK using the channel's [installation instructions](https://github.com/laravel-notification-channels/fcm#installation). Usually this means setting `FIREBASE_CREDENTIALS` to an absolute service-account JSON path outside the public directory. Keep credentials out of Git. Use a dedicated test Firebase project.
 2. Obtain an FCM registration token from your test client (for example Firebase Messaging's `getToken()` on Android or Web, or `Messaging.messaging().token` on Apple platforms). The device token and service account must belong to the same Firebase project. Apple delivery also requires the project's APNs configuration and device permissions.
 3. Set `PUSHBOX_ALLOW_SEND=true` locally, open **Device settings**, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
