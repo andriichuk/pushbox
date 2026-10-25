@@ -10,10 +10,14 @@ use Andriichuk\Pushbox\Listeners\RecordPushboxFcmNotificationFailure;
 use Andriichuk\Pushbox\Preview\FcmPreviewNormalizer;
 use Andriichuk\Pushbox\Preview\PreviewResolver;
 use Andriichuk\Pushbox\Sending\PendingFcmCapture;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class PushboxServiceProvider extends ServiceProvider
@@ -22,7 +26,7 @@ class PushboxServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/pushbox.php', 'pushbox');
 
-        $this->app->singleton(Pushbox::class, function ($app) {
+        $this->app->scoped(Pushbox::class, function ($app) {
             return new Pushbox;
         });
 
@@ -35,6 +39,10 @@ class PushboxServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pushbox');
+        View::composer('pushbox::index', function ($view): void {
+            $view->with('pushboxCss', file_get_contents(__DIR__.'/../resources/dist/pushbox.css'));
+            $view->with('pushboxJs', file_get_contents(__DIR__.'/../resources/js/pushbox.js'));
+        });
 
         Event::listen(NotificationFailed::class, RecordPushboxFcmNotificationFailure::class);
 
@@ -49,6 +57,9 @@ class PushboxServiceProvider extends ServiceProvider
 
             app(PendingFcmCapture::class)->response = $event->response;
         });
+
+        RateLimiter::for('pushbox-send', fn (Request $request) => Limit::perMinute(10)->by($request->ip())
+        );
 
         $this->registerRoutes();
 
@@ -69,7 +80,7 @@ class PushboxServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        if (! $this->shouldRegisterRoutes()) {
+        if ($this->app->routesAreCached() || ! $this->shouldRegisterRoutes()) {
             return;
         }
 

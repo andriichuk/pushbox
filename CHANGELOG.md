@@ -1,9 +1,30 @@
 # Changelog
 
-All notable changes to `andriichuk/pushbox` will be documented in this file.
+## Unreleased — next major (2.0)
 
-## 1.0.0 - 2026-04-11
+### Breaking
+
+- Support PHP 8.4/8.5 and Laravel 12/13; remove Laravel 11 support.
+- Require the `viewPushbox` authorization Gate outside local/testing.
+- Separate token Save/Clear from sending. Send requests require explicit confirmation and the current target hash.
+- Log actual outcomes as `pushbox.accepted`, `pushbox.failed`, and `pushbox.skipped`.
+
+### Fixed
+
+- Route the FCM test token under the driver's `fcm` key.
+- Preserve typed recipients and selected translations for test payloads without changing the recipient's real device routes.
+- Restore locale, nested group context, database transactions, and scoped registry state.
+- Render setup instructions for empty installs and contain preview failures.
+- Enforce environment restrictions at request time, including cached routes.
+- Report rejected, skipped, or missing provider results accurately; include actual FCM results and redact the test token.
 
 ### Added
 
-- Initial release: Mailbook-style registry for Laravel notifications, FCM payload preview in the browser, optional gated test send, and GitHub Actions CI.
+- Required test-device confirmation, stale-target detection, and send throttling.
+- Bundled offline UI assets and real-driver, browser, lifecycle, and access regression tests.
+- Pull-request CI for the supported compatibility matrix and optional-driver absence, security audits, and reproducible asset builds.
+- Fresh-app, Firebase setup, migration, and release documentation.
+
+## 1.0.0 - 2026-04-11
+
+- Initial release: Mailbook-style registry, FCM payload preview, and optional test sending.
