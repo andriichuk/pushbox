@@ -40,6 +40,7 @@ class PushboxServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pushbox');
         View::composer('pushbox::index', function ($view): void {
+            $view->with('pushboxFavicon', 'data:image/svg+xml,'.rawurlencode(file_get_contents(__DIR__.'/../resources/favicon.svg')));
             $view->with('pushboxCss', file_get_contents(__DIR__.'/../resources/dist/pushbox.css'));
             $view->with('pushboxJs', file_get_contents(__DIR__.'/../resources/js/pushbox.js'));
         });

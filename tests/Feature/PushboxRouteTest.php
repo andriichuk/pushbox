@@ -68,7 +68,6 @@ class PushboxRouteTest extends TestCase
         $this->withSession([PushboxController::SESSION_FCM_DEVICE_TOKEN => $token])->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
-                'confirm_send' => '1',
                 'target_hash' => hash('sha256', $token),
             ])
             ->assertRedirect();
@@ -90,7 +89,6 @@ class PushboxRouteTest extends TestCase
         $this->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
-                'confirm_send' => '1',
                 'target_hash' => hash('sha256', ''),
             ])
             ->assertRedirect()

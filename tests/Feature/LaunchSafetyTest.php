@@ -44,11 +44,11 @@ class LaunchSafetyTest extends TestCase
         Bus::assertNothingDispatched();
     }
 
-    public function test_send_requires_confirmation_and_a_current_target(): void
+    public function test_send_requires_a_current_target(): void
     {
         $this->enableSending();
         Bus::fake();
-        $this->post('/pushbox/send', ['class' => ExampleNotification::class])->assertSessionHasErrors(['confirm_send', 'target_hash']);
+        $this->post('/pushbox/send', ['class' => ExampleNotification::class])->assertSessionHasErrors(['target_hash']);
         $this->post('/pushbox/send', $this->sendData('old-token'))->assertSessionHasErrors(['pushbox']);
         Bus::assertNothingDispatched();
     }
@@ -114,7 +114,8 @@ class LaunchSafetyTest extends TestCase
         self::assertStringNotContainsString('cdn.jsdelivr.net', $html);
         self::assertStringNotContainsString('fonts.googleapis.com', $html);
         self::assertStringContainsString('tailwindcss', $html);
-        self::assertStringContainsString('data-confirm-send', $html);
+        self::assertStringNotContainsString('data-confirm-send', $html);
+        self::assertStringNotContainsString('window.confirm', $html);
     }
 
     private function enableSending(): void
@@ -125,6 +126,6 @@ class LaunchSafetyTest extends TestCase
 
     private function sendData(string $token): array
     {
-        return ['class' => ExampleNotification::class, 'confirm_send' => '1', 'target_hash' => hash('sha256', $token)];
+        return ['class' => ExampleNotification::class, 'target_hash' => hash('sha256', $token)];
     }
 }

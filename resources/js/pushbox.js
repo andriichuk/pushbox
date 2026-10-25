@@ -1,12 +1,4 @@
 (function () {
-    document.querySelectorAll('form[data-confirm-send]').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!window.confirm('Send a real notification to ' + form.dataset.confirmSend + '?')) {
-                event.preventDefault();
-            }
-        });
-    });
-
     var wrap = document.getElementById('pushbox-sidebar-wrap');
     var overlay = document.getElementById('pushbox-overlay');
     var toggle = document.getElementById('pushbox-menu-toggle');

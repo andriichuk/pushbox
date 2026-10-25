@@ -95,7 +95,6 @@ class PushboxController extends Controller
         $validated = $request->validate([
             ...$this->selectionRules(),
             'class' => ['required', 'string', 'max:1024'],
-            'confirm_send' => ['accepted'],
             'target_hash' => ['required', 'string', 'size:64'],
             'fcm_token' => ['prohibited'],
         ]);
@@ -106,7 +105,7 @@ class PushboxController extends Controller
         }
 
         if (! hash_equals(hash('sha256', $token), $validated['target_hash'])) {
-            return $this->backToSelection($request)->withErrors(['pushbox' => 'The target changed. Review the displayed test device and confirm again.']);
+            return $this->backToSelection($request)->withErrors(['pushbox' => 'The target changed. Reload the preview before sending again.']);
         }
 
         app()->forgetInstance('pushbox.send_report');

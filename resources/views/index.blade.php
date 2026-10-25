@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <title>Pushbox</title>
+    <link rel="icon" type="image/svg+xml" href="{{ $pushboxFavicon }}">
     <style>{!! $pushboxCss !!}</style>
 </head>
 <body class="h-full overflow-hidden font-sans antialiased">
@@ -255,17 +256,12 @@ Pushbox::add(App\Notifications\WelcomeNotification::class);</pre>
 
                 <div class="mb-6 space-y-3">
                     @if($fcm && $pushboxCanSend)
-                        <form method="post" action="{{ route('pushbox.send') }}" data-confirm-send="{{ $fcmSendTargetHint }}" class="space-y-3">
+                        <form method="post" action="{{ route('pushbox.send') }}" class="space-y-3">
                             @csrf
                             <input type="hidden" name="class" value="{{ $selected->className() }}">
                             <input type="hidden" name="variant" value="{{ request('variant') }}">
                             <input type="hidden" name="locale" value="{{ $selectedLocale }}">
                             <input type="hidden" name="target_hash" value="{{ $fcmSendTargetHash }}">
-                            <p class="text-sm font-medium">Target: {{ $fcmSendTargetHint }}</p>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="confirm_send" value="1" required>
-                                I confirm this is my test device.
-                            </label>
                             <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-foreground px-4 text-sm font-medium text-background hover:bg-foreground/90">
                                 Send notification
                             </button>
@@ -352,180 +348,149 @@ Pushbox::add(App\Notifications\WelcomeNotification::class);</pre>
                         </div>
                     </div>
                 @else
-                    <div class="mb-6 flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
-                        <div class="px-6">
-                            <div class="leading-none font-semibold flex items-center gap-2 text-base">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                                Alert content
-                            </div>
-                        </div>
-                        <div class="space-y-4 px-6">
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Title</p>
-                                    <p class="text-sm {{ $alertTitle ? 'text-foreground' : 'italic text-muted-foreground' }}">{{ $alertTitle ?: 'Not set' }}</p>
-                                </div>
-                                <div>
-                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Body</p>
-                                    <p class="text-sm {{ $alertBody ? 'text-foreground' : 'italic text-muted-foreground' }}">{{ $alertBody ?: 'Not set' }}</p>
-                                </div>
-                            </div>
-                            @if($alertImage)
-                                <div>
-                                    <p class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                        Image
-                                    </p>
-                                    <div class="overflow-hidden rounded-lg border border-border">
-                                        <img src="{{ $alertImage }}" alt="" class="h-32 w-full object-cover" loading="lazy">
+                    <div class="mb-6 grid items-start gap-6 lg:grid-cols-2">
+                        <div class="min-w-0 space-y-6">
+                            <div class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
+                                <div class="px-6">
+                                    <div class="leading-none font-semibold flex items-center gap-2 text-base">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                                        Alert content
                                     </div>
-                                    <p class="mt-1 truncate font-mono text-xs text-muted-foreground" title="{{ $alertImage }}">{{ $alertImage }}</p>
+                                </div>
+                                <div class="space-y-4 px-6">
+                                    <div class="grid gap-4">
+                                        <div>
+                                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Title</p>
+                                            <p class="text-sm {{ $alertTitle ? 'text-foreground' : 'italic text-muted-foreground' }}">{{ $alertTitle ?: 'Not set' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Body</p>
+                                            <p class="text-sm {{ $alertBody ? 'text-foreground' : 'italic text-muted-foreground' }}">{{ $alertBody ?: 'Not set' }}</p>
+                                        </div>
+                                    </div>
+                                    @if($alertImage)
+                                        <div>
+                                            <p class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                Image
+                                            </p>
+                                            <div class="overflow-hidden rounded-lg border border-border">
+                                                <img src="{{ $alertImage }}" alt="" class="h-32 w-full object-cover" loading="lazy">
+                                            </div>
+                                            <p class="mt-1 truncate font-mono text-xs text-muted-foreground" title="{{ $alertImage }}">{{ $alertImage }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if(count($dataRows) > 0)
+                                <div class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
+                                    <div class="px-6">
+                                        <div class="leading-none font-semibold flex items-center gap-2 text-base">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                            Data payload
+                                        </div>
+                                    </div>
+                                    <div class="px-6">
+                                        <div class="overflow-hidden rounded-lg border border-border">
+                                            <table class="w-full text-sm">
+                                                <thead class="bg-secondary">
+                                                    <tr>
+                                                        <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Key</th>
+                                                        <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-border">
+                                                    @foreach($dataRows as $row)
+                                                        <tr>
+                                                            <td class="px-4 py-2.5 text-muted-foreground">{{ $row['label'] }}</td>
+                                                            <td class="px-4 py-2.5 font-mono text-foreground">{{ $row['value'] }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($androidTtl || $apnsReadable)
+                                <div class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
+                                    <div class="px-6">
+                                        <div class="leading-none font-semibold text-base">Platform configuration</div>
+                                    </div>
+                                    <div class="grid gap-6 px-6 sm:grid-cols-2">
+                                        @if($androidTtl)
+                                            <div>
+                                                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Android</p>
+                                                <div class="flex justify-between text-sm">
+                                                    <span class="text-muted-foreground">TTL</span>
+                                                    <span class="font-mono">{{ $androidTtl }}</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        @if($apnsReadable)
+                                            <div>
+                                                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">APNs (iOS)</p>
+                                                <div class="flex justify-between text-sm">
+                                                    <span class="text-muted-foreground">Expiration</span>
+                                                    <span class="font-mono text-xs">{{ $apnsReadable }}</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             @endif
                         </div>
-                    </div>
 
-                    @if(count($dataRows) > 0)
-                        <div class="mb-6 flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
+                        <div class="flex min-w-0 flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
                             <div class="px-6">
                                 <div class="leading-none font-semibold flex items-center gap-2 text-base">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                                    Data payload
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                                    Device previews
                                 </div>
+                                <p class="mt-2 text-sm text-muted-foreground">Preview your notification on Android. Appearance may vary by device and app.</p>
                             </div>
                             <div class="px-6">
-                                <div class="overflow-hidden rounded-lg border border-border">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-secondary">
-                                            <tr>
-                                                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Key</th>
-                                                <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-border">
-                                            @foreach($dataRows as $row)
-                                                <tr>
-                                                    <td class="px-4 py-2.5 text-muted-foreground">{{ $row['label'] }}</td>
-                                                    <td class="px-4 py-2.5 font-mono text-foreground">{{ $row['value'] }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    @if($androidTtl || $apnsReadable)
-                        <div class="mb-6 flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
-                            <div class="px-6">
-                                <div class="leading-none font-semibold text-base">Platform configuration</div>
-                            </div>
-                            <div class="grid gap-6 px-6 sm:grid-cols-2">
-                                @if($androidTtl)
-                                    <div>
-                                        <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Android</p>
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-muted-foreground">TTL</span>
-                                            <span class="font-mono">{{ $androidTtl }}</span>
-                                        </div>
-                                    </div>
-                                @endif
-                                @if($apnsReadable)
-                                    <div>
-                                        <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">APNs (iOS)</p>
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-muted-foreground">Expiration</span>
-                                            <span class="font-mono text-xs">{{ $apnsReadable }}</span>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-
-                    <div class="mb-6 flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm">
-                        <div class="px-6">
-                            <div class="leading-none font-semibold flex items-center gap-2 text-base">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-                                Device previews
-                            </div>
-                            <p class="mt-2 text-sm text-muted-foreground">Visual approximations of iOS and Android notifications. Actual rendering depends on the OS and client app.</p>
-                        </div>
-                        <div class="px-6">
-                            <div class="flex flex-wrap justify-center gap-8">
-                                {{-- iPhone lock screen (theme device-preview) --}}
-                                <div class="flex flex-col items-center">
-                                    <p class="mb-3 text-xs font-medium text-muted-foreground">iPhone Lock Screen</p>
-                                    <div class="w-[320px] overflow-hidden rounded-3xl border border-border/50 shadow-2xl">
-                                        <div class="bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f0f23] px-5 pb-6 pt-8">
-                                            <div class="mx-auto mb-6 h-[28px] w-[100px] rounded-full bg-black"></div>
-                                            <div class="mb-6 text-center">
-                                                <p class="text-[64px] font-light leading-none tracking-tight text-white">9:41</p>
-                                                <p class="mt-2 text-[14px] font-medium text-white/60">Friday, January 17</p>
-                                            </div>
-                                            <div class="rounded-[22px] bg-white/12 p-4 shadow-[inset_0_0.5px_0_0_rgba(255,255,255,0.1)] backdrop-blur-2xl">
-                                                <div class="flex items-start gap-3">
-                                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-b from-primary to-primary/80 text-base font-semibold text-primary-foreground shadow-sm">
-                                                        {{ \Illuminate\Support\Str::substr($appLabel, 0, 1) }}
-                                                    </div>
-                                                    <div class="min-w-0 flex-1">
-                                                        <div class="mb-1 flex items-center justify-between">
-                                                            <span class="text-[13px] font-semibold tracking-wide text-white/90">{{ $appLabel }}</span>
-                                                            <span class="text-[12px] text-white/50">now</span>
+                                <div class="flex justify-center">
+                                    {{-- Android lock screen --}}
+                                    <div class="flex w-full flex-col items-center">
+                                        <p class="mb-3 text-xs font-medium text-muted-foreground">Android Lock Screen</p>
+                                        <div class="w-full max-w-[340px] overflow-hidden rounded-3xl border border-border/50 shadow-2xl">
+                                            <div class="bg-gradient-to-b from-[#0d1117] via-[#161b22] to-[#0d1117] px-4 pb-10 pt-6">
+                                                <div class="mb-4 flex items-center justify-between px-1">
+                                                    <span class="text-[12px] font-medium text-white/70">9:41</span>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <svg class="h-3 w-3 text-white/60" viewBox="0 0 24 24" fill="currentColor"><path d="M2 22h20V2L2 22zm18-2H6.83L20 6.83V20z"/></svg>
+                                                        <svg class="h-3 w-3 text-white/60" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm6-6c-.2 0-.4.1-.5.1l1.4 1.4c.1-.1.1-.2.1-.4 0-1.1-.9-2-2-2-.2 0-.3 0-.5.1L18 9.8c.3-.1.6-.2 1-.2 2.2 0 4 1.8 4 4 0 .4-.1.7-.2 1l1.5 1.5c.4-.8.7-1.6.7-2.5 0-3.3-2.7-6-6-6zm-6-6C6.5 6 1.8 9.6.2 14.5l1.5 1.5C3.1 11.8 7.2 8.5 12 8.5s8.9 3.3 10.3 7.5l1.5-1.5C22.2 9.6 17.5 6 12 6z"/></svg>
+                                                        <div class="flex h-3 w-5 items-center rounded-sm border border-white/40 px-0.5">
+                                                            <div class="h-1.5 w-3 rounded-[1px] bg-white/60"></div>
                                                         </div>
-                                                        <p class="text-[15px] font-semibold leading-tight text-white {{ $dTitle ? '' : 'italic text-white/40' }}">{{ $dTitle ?: 'No title in payload' }}</p>
-                                                        <p class="mt-1 line-clamp-2 text-[14px] leading-snug text-white/80 {{ $dBody ? '' : 'italic text-white/40' }}">{{ $dBody ?: 'No body in payload' }}</p>
                                                     </div>
                                                 </div>
-                                                @if($dImage)
-                                                    <div class="mt-3 overflow-hidden rounded-[14px]">
-                                                        <img src="{{ $dImage }}" alt="" class="h-32 w-full object-cover" loading="lazy">
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {{-- Android lock screen --}}
-                                <div class="flex flex-col items-center">
-                                    <p class="mb-3 text-xs font-medium text-muted-foreground">Android Lock Screen</p>
-                                    <div class="w-[320px] overflow-hidden rounded-3xl border border-border/50 shadow-2xl">
-                                        <div class="bg-gradient-to-b from-[#0d1117] via-[#161b22] to-[#0d1117] px-5 pb-6 pt-6">
-                                            <div class="mb-4 flex items-center justify-between px-1">
-                                                <span class="text-[12px] font-medium text-white/70">9:41</span>
-                                                <div class="flex items-center gap-1.5">
-                                                    <svg class="h-3 w-3 text-white/60" viewBox="0 0 24 24" fill="currentColor"><path d="M2 22h20V2L2 22zm18-2H6.83L20 6.83V20z"/></svg>
-                                                    <svg class="h-3 w-3 text-white/60" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm6-6c-.2 0-.4.1-.5.1l1.4 1.4c.1-.1.1-.2.1-.4 0-1.1-.9-2-2-2-.2 0-.3 0-.5.1L18 9.8c.3-.1.6-.2 1-.2 2.2 0 4 1.8 4 4 0 .4-.1.7-.2 1l1.5 1.5c.4-.8.7-1.6.7-2.5 0-3.3-2.7-6-6-6zm-6-6C6.5 6 1.8 9.6.2 14.5l1.5 1.5C3.1 11.8 7.2 8.5 12 8.5s8.9 3.3 10.3 7.5l1.5-1.5C22.2 9.6 17.5 6 12 6z"/></svg>
-                                                    <div class="flex h-3 w-5 items-center rounded-sm border border-white/40 px-0.5">
-                                                        <div class="h-1.5 w-3 rounded-[1px] bg-white/60"></div>
-                                                    </div>
+                                                <div class="mb-10 text-center">
+                                                    <p class="text-[64px] font-extralight leading-none tracking-tight text-white">9:41</p>
+                                                    <p class="mt-2 text-[14px] font-medium text-white/60">Fri, Jan 17</p>
                                                 </div>
-                                            </div>
-                                            <div class="mb-6 text-center">
-                                                <p class="text-[64px] font-extralight leading-none tracking-tight text-white">9:41</p>
-                                                <p class="mt-2 text-[14px] font-medium text-white/60">Fri, Jan 17</p>
-                                            </div>
-                                            <div class="rounded-[26px] bg-[#1f2937]/95 p-4 shadow-xl">
-                                                <div class="flex items-start gap-3">
-                                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-base font-medium text-primary-foreground shadow-sm">
-                                                        {{ \Illuminate\Support\Str::substr($appLabel, 0, 1) }}
-                                                    </div>
-                                                    <div class="min-w-0 flex-1">
-                                                        <div class="mb-1 flex items-center gap-1.5">
-                                                            <span class="text-[13px] font-medium text-white/80">{{ $appLabel }}</span>
-                                                            <span class="text-[12px] text-white/40">• now</span>
+                                                <div class="rounded-[26px] bg-[#1f2937]/95 px-5 py-5 shadow-xl">
+                                                    <div class="flex min-w-0 items-center gap-2">
+                                                        <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-[11px] font-medium text-primary-foreground">
+                                                            {{ \Illuminate\Support\Str::substr($appLabel, 0, 1) }}
                                                         </div>
-                                                        <p class="text-[15px] font-medium leading-tight text-white {{ $dTitle ? '' : 'italic text-white/40' }}">{{ $dTitle ?: 'No title in payload' }}</p>
-                                                        <p class="mt-1 line-clamp-2 text-[14px] leading-snug text-white/70 {{ $dBody ? '' : 'italic text-white/40' }}">{{ $dBody ?: 'No body in payload' }}</p>
+                                                        <span class="min-w-0 truncate text-[12px] font-medium text-white/80">{{ $appLabel }}</span>
+                                                        <span class="shrink-0 whitespace-nowrap text-[11px] text-white/40">• now</span>
+                                                        <svg class="ml-auto h-4 w-4 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                                     </div>
-                                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                                    <div class="mt-3 min-w-0 space-y-2">
+                                                        <p class="break-words text-[15px] font-medium leading-5 text-white {{ $dTitle ? '' : 'italic text-white/40' }}">{{ $dTitle ?: 'No title in payload' }}</p>
+                                                        <p class="line-clamp-3 break-words text-[14px] leading-5 text-white/70 {{ $dBody ? '' : 'italic text-white/40' }}">{{ $dBody ?: 'No body in payload' }}</p>
+                                                    </div>
+                                                    @if($dImage)
+                                                        <div class="mt-4 overflow-hidden rounded-[18px]">
+                                                            <img src="{{ $dImage }}" alt="" class="h-32 w-full object-cover" loading="lazy">
+                                                        </div>
+                                                    @endif
                                                 </div>
-                                                @if($dImage)
-                                                    <div class="mt-3 overflow-hidden rounded-[18px]">
-                                                        <img src="{{ $dImage }}" alt="" class="h-32 w-full object-cover" loading="lazy">
-                                                    </div>
-                                                @endif
                                             </div>
                                         </div>
                                     </div>

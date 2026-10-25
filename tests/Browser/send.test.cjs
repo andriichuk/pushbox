@@ -6,7 +6,7 @@ const { readFileSync } = require('node:fs');
 const { createServer } = require('node:http');
 
 // Use the actual Blade-rendered page, with the PHP route behavior covered by the feature tests.
-test('token actions, send confirmation, offline assets, and mobile navigation', async () => {
+test('token actions, immediate sending, offline assets, and mobile navigation', async () => {
   execFileSync('php', ['vendor/bin/phpunit', '--group', 'browser-fixture'], { stdio: 'pipe' });
   const pageHtml = readFileSync('build/browser/notification.html');
   const emptyHtml = readFileSync('build/browser/empty.html');
@@ -34,20 +34,20 @@ test('token actions, send confirmation, offline assets, and mobile navigation', 
     });
     await page.goto(base + '/pushbox');
     assert.equal(await page.getByRole('button', { name: 'Send notification', exact: true }).count(), 1);
-    await page.getByLabel('I confirm this is my test device.').check();
-    page.once('dialog', async dialog => {
-      assert.match(dialog.message(), /Configured default/);
+    assert.equal(await page.getByRole('checkbox').count(), 0);
+    assert.equal(await page.getByText('Target:', { exact: false }).count(), 0);
+    const dialogs = [];
+    page.on('dialog', async dialog => {
+      dialogs.push(dialog.message());
       await dialog.dismiss();
     });
-    await page.getByRole('button', { name: 'Send notification', exact: true }).click();
-    assert.deepEqual(posts, []);
-    page.once('dialog', dialog => dialog.accept());
     await Promise.all([
       page.waitForNavigation(),
       page.getByRole('button', { name: 'Send notification', exact: true }).click(),
     ]);
     await page.waitForLoadState();
     assert.deepEqual(posts, ['/pushbox/send']);
+    assert.deepEqual(dialogs, []);
     await page.getByLabel('FCM test device token').fill('new-device');
     await Promise.all([
       page.waitForNavigation(),

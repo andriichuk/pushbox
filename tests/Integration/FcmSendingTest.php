@@ -29,7 +29,7 @@ class FcmSendingTest extends TestCase
 {
     private function sendData(string $locale = 'en'): array
     {
-        return ['class' => TypedNotification::class, 'locale' => $locale, 'confirm_send' => '1', 'target_hash' => hash('sha256', 'test-device-token')];
+        return ['class' => TypedNotification::class, 'locale' => $locale, 'target_hash' => hash('sha256', 'test-device-token')];
     }
 
     private function prepare(): array
