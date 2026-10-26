@@ -8,7 +8,7 @@ This branch changes the support policy and send/access behavior. Release it as a
 - Review dependency updates. Automatic dependency merges and bot writes to main have been removed.
 - Run the checks listed in README on the exact proposed release commit. CI builds the supported PHP/Laravel combinations, including real FCM integration with a mocked provider and a lane where FCM is absent.
 - Build both a Git archive and a `composer archive`. Confirm they contain `config/`, `routes/`, `src/`, `stubs/`, Blade views, the favicon, bundled CSS, and JavaScript. They should omit the development lock file, tests, build tools, local examples, and launch media. A user does not run npm to install the package.
-- Refresh `docs/images/preview.png` and `workflow.gif` when the workspace changes. The README uses commit-pinned hosted images so package downloads can omit launch media and deleting a feature branch does not break them. Keep `social-preview.svg` and its 1280 × 640 PNG in sync; upload the PNG under the repository’s General settings → Social preview.
+- Refresh `docs/images/preview.png` and `workflow.gif` when the workspace changes. The README uses commit-pinned hosted images so package downloads can omit launch media and deleting a feature branch does not break them. Use the approved artwork for `social-preview.png`, sized to 1280 × 640 and under 1 MB. Upload it under the repository’s General settings → Social preview.
 
 ## Fresh Laravel application
 
