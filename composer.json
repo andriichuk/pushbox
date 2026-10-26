@@ -1,6 +1,6 @@
 {
     "name": "andriichuk/pushbox",
-    "description": "Laravel developer tool: preview FCM push payloads from notifications in the browser—Mailbook-style registry (add, to, category, variants, locales), optional DB rollback, and gated test sends.",
+    "description": "Preview and test Laravel push notifications.",
     "keywords": [
         "laravel",
         "laravel-package",
@@ -10,7 +10,6 @@
         "push-notifications",
         "preview",
         "developer-tools",
-        "mailbook",
         "pushbox",
         "testing"
     ],

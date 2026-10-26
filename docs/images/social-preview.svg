@@ -5,13 +5,9 @@
 <image x="48" y="48" width="54" height="54" xlink:href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTYgMjE2Ij4KICAgIDxwYXRoIGZpbGw9IiMxMTE0MTQiIGQ9Ik00MiA0NEMzNyA0MyAzOSAzNCA0NSAzMEw4NyA2Qzk2IDEgMTAyIDEgMTExIDVMMTgzIDM5QzE5OCA0NiAyMDQgNTYgMjA0IDcyVjExN0MyMDQgMTMzIDE5OSAxNDEgMTg1IDE0OUwxMTAgMTkwQzEwNSAxOTMgMTAwIDE5MSAxMDAgMTg1VjE0OEMxMDAgMTQxIDEwMiAxMzggMTA4IDEzNEwxMzUgMTE4QzE0MSAxMTQgMTQ0IDExMSAxNDQgMTA0VjgyQzE0NCA3NiAxNDIgNzMgMTM2IDcwTDU2IDMzQzUwIDMwIDQ1IDM1IDQyIDQ0WiIvPgogICAgPHBhdGggZmlsbD0iIzExMTQxNCIgZD0iTTQzIDE0N0w3OCAxNjNDODMgMTY1IDg2IDE2OSA4NiAxNzRWMjAxQzg2IDIwNyA4MiAyMTEgNzYgMjA4TDQ1IDE5NUM0MCAxOTMgMzggMTkwIDM4IDE4NFYxNTFDMzggMTQ3IDQwIDE0NiA0MyAxNDdaIi8+CiAgICA8cGF0aCBmaWxsPSIjZmY0YjJiIiBkPSJNNDEgNTBDMzcgNDcgMzQgNDkgMzQgNTNWNzFMNyA3NkMzIDc3IDEgNzkgMSA4M1YxMzBDMSAxMzUgMyAxMzcgOCAxMzVMMzUgMTI4VjE0MEMzNSAxNDUgMzggMTQ3IDQyIDE0NEw5NSAxMDlDMTAxIDEwNSAxMDEgMTAxIDk1IDk3WiIvPgo8L3N2Zz4K"/>
 <g font-family="DejaVu Sans,sans-serif" fill="#171717">
 <text x="116" y="85" font-size="30" font-weight="bold">Pushbox</text>
-<text x="48" y="218" font-size="40" font-weight="bold">A notification</text>
-<text x="48" y="272" font-size="40" font-weight="bold">studio for Laravel.</text>
-<text x="48" y="328" font-size="20" fill="#555b56">Preview payloads. Compare variants.</text>
-<text x="48" y="360" font-size="20" fill="#555b56">Send a test push to your device.</text>
-<rect x="48" y="402" width="104" height="34" rx="17" fill="#171717"/><text x="100" y="424" text-anchor="middle" font-size="13" fill="#fafafa">LARAVEL</text>
-<rect x="162" y="402" width="126" height="34" rx="17" fill="#ffe7df"/><text x="225" y="424" text-anchor="middle" font-size="13">FIREBASE FCM</text>
-<text x="48" y="582" font-size="17" fill="#555b56">github.com/andriichuk/pushbox</text>
+<text x="48" y="224" font-size="64" font-weight="bold" letter-spacing="-2">Preview.</text>
+<text x="48" y="304" font-size="64" font-weight="bold" letter-spacing="-2">Inspect.</text>
+<text x="48" y="384" font-size="64" font-weight="bold" letter-spacing="-2">Send.</text>
 </g>
 <rect x="480" y="96" width="752" height="476" rx="16" fill="#d2d7cc"/>
 <rect x="480" y="88" width="752" height="476" rx="16" fill="white" stroke="#d5d8d1"/>
