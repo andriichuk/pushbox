@@ -8,6 +8,7 @@ use Andriichuk\Pushbox\Preview\PreviewResolver;
 use Andriichuk\Pushbox\Registry\NotificationItem;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
+use stdClass;
 
 class PreviewResolverTest extends TestCase
 {
@@ -16,7 +17,7 @@ class PreviewResolverTest extends TestCase
         /** @var PreviewResolver $resolver */
         $resolver = $this->app->make(PreviewResolver::class);
 
-        $item = NotificationItem::make(ExampleNotification::class, null, null, new \stdClass);
+        $item = NotificationItem::make(ExampleNotification::class, null, null, new stdClass);
         $payload = $resolver->resolve($item);
 
         $this->assertNotNull($payload['fcm']);

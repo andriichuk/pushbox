@@ -11,3 +11,4 @@ composer.phar
 /node_modules/
 /test-results/
 /playwright-report/
+/examples/

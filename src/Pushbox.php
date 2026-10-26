@@ -11,6 +11,7 @@ use Andriichuk\Pushbox\Registry\NotifyRegistrar;
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
+use Throwable;
 
 class Pushbox
 {
@@ -82,7 +83,7 @@ class Pushbox
             if ($item->hasCategory() && ! in_array($item->getCategory(), $categories, true)) {
                 $categories[] = $item->getCategory();
                 $categoryItems = $items
-                    ->filter(fn (NotificationItem $n) => $n->getCategory() === $item->getCategory())
+                    ->filter(fn (NotificationItem $notification) => $notification->getCategory() === $item->getCategory())
                     ->values();
 
                 $output->push(new NotificationGroup(
@@ -110,7 +111,7 @@ class Pushbox
 
             try {
                 include $filename;
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 $this->collection = new Collection;
                 throw $exception;
             }
@@ -124,6 +125,7 @@ class Pushbox
         }
 
         $codes = $this->localeCodes();
+
         if ($codes !== [] && ! in_array($locale, $codes, true)) {
             return $this->locale = (string) config('app.locale', 'en');
         }
@@ -176,7 +178,7 @@ class Pushbox
         $selected = null;
 
         if ($class) {
-            $selected = $items->first(fn (NotificationItem $n) => mb_strtolower($n->className()) === mb_strtolower($class));
+            $selected = $items->first(fn (NotificationItem $notification) => mb_strtolower($notification->className()) === mb_strtolower($class));
         }
 
         if (! $selected instanceof NotificationItem && $fallback) {

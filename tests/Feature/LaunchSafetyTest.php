@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Andriichuk\Pushbox\Tests\Feature;
 
 use Andriichuk\Pushbox\Http\Controllers\PushboxController;
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
 use Andriichuk\Pushbox\Pushbox;
+use Andriichuk\Pushbox\Sending\SendFcmNotification;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Mockery;
+use RuntimeException;
 
 class LaunchSafetyTest extends TestCase
 {
@@ -24,16 +25,16 @@ class LaunchSafetyTest extends TestCase
     public function test_preview_exception_is_displayed_and_other_entries_remain_visible(): void
     {
         app(Pushbox::class)->add(function (): ExampleNotification {
-            throw new \RuntimeException('<broken factory>');
+            throw new RuntimeException('<broken factory>');
         });
         $this->get('/pushbox')->assertOk()->assertSee('Unable to preview this notification')
             ->assertSee('&lt;broken factory&gt;', false)->assertSee('ExampleNotification');
     }
 
-    public function test_save_and_clear_never_dispatch_even_when_sending_is_enabled(): void
+    public function test_save_and_clear_never_send_even_when_sending_is_enabled(): void
     {
         config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true]);
-        Bus::fake();
+        $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
         $this->post('/pushbox/device-token', ['fcm_token' => 'saved-token'])->assertRedirect();
         self::assertSame('saved-token', session(PushboxController::SESSION_FCM_DEVICE_TOKEN));
         $this->post('/pushbox/device-token/clear')->assertRedirect();
@@ -41,37 +42,38 @@ class LaunchSafetyTest extends TestCase
         $this->withSession([PushboxController::SESSION_FCM_DEVICE_TOKEN => 'old-token'])
             ->post('/pushbox/device-token', ['fcm_token' => ''])->assertRedirect();
         self::assertNull(session(PushboxController::SESSION_FCM_DEVICE_TOKEN));
-        Bus::assertNothingDispatched();
     }
 
-    public function test_send_requires_confirmation_and_a_current_target(): void
+    public function test_send_requires_a_current_target(): void
     {
         $this->enableSending();
-        Bus::fake();
-        $this->post('/pushbox/send', ['class' => ExampleNotification::class])->assertSessionHasErrors(['confirm_send', 'target_hash']);
+        $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
+        $this->post('/pushbox/send', ['class' => ExampleNotification::class])->assertSessionHasErrors(['target_hash']);
         $this->post('/pushbox/send', $this->sendData('old-token'))->assertSessionHasErrors(['pushbox']);
-        Bus::assertNothingDispatched();
     }
 
-    public function test_missing_report_is_skipped_and_not_logged_as_accepted(): void
+    public function test_skipped_result_is_not_logged_as_accepted(): void
     {
         $this->enableSending();
-        Bus::fake();
+        $this->mock(SendFcmNotification::class)->shouldReceive('send')->once()->andReturn([
+            'ok' => false,
+            'status' => 'skipped',
+            'note' => 'The notification was skipped.',
+        ]);
         Log::spy();
         $this->post('/pushbox/send', $this->sendData('test-token'))
             ->assertSessionHas('pushbox_send_result.ok', false)
             ->assertSessionHas('pushbox_send_result.status', 'skipped')
             ->assertSessionMissing('status');
-        Log::shouldHaveReceived('log')->once()->with('warning', 'pushbox.skipped', \Mockery::type('array'));
+        Log::shouldHaveReceived('log')->once()->with('warning', 'pushbox.skipped', Mockery::type('array'));
     }
 
     public function test_send_disabled_and_nonlocal_disabled_are_enforced(): void
     {
-        Bus::fake();
+        $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
         $this->post('/pushbox/send')->assertForbidden();
         config(['pushbox.send.enabled' => true]);
         $this->post('/pushbox/send')->assertForbidden();
-        Bus::assertNothingDispatched();
     }
 
     public function test_request_time_environment_guard_denies_previously_registered_routes(): void
@@ -100,12 +102,15 @@ class LaunchSafetyTest extends TestCase
     public function test_send_is_rate_limited(): void
     {
         $this->enableSending();
-        Bus::fake();
-        for ($i = 0; $i < 10; $i++) {
+        $this->mock(SendFcmNotification::class)->shouldReceive('send')->times(10)->andReturn([
+            'ok' => false,
+            'status' => 'skipped',
+        ]);
+
+        for ($attempt = 0; $attempt < 10; $attempt++) {
             $this->post('/pushbox/send', $this->sendData('test-token'))->assertRedirect();
         }
         $this->post('/pushbox/send', $this->sendData('test-token'))->assertStatus(429);
-        Bus::assertDispatchedTimes(SendPushboxFcmNotificationJob::class, 10);
     }
 
     public function test_page_contains_bundled_assets_without_remote_scripts_or_fonts(): void
@@ -114,7 +119,8 @@ class LaunchSafetyTest extends TestCase
         self::assertStringNotContainsString('cdn.jsdelivr.net', $html);
         self::assertStringNotContainsString('fonts.googleapis.com', $html);
         self::assertStringContainsString('tailwindcss', $html);
-        self::assertStringContainsString('data-confirm-send', $html);
+        self::assertStringNotContainsString('data-confirm-send', $html);
+        self::assertStringNotContainsString('window.confirm', $html);
     }
 
     private function enableSending(): void
@@ -125,6 +131,6 @@ class LaunchSafetyTest extends TestCase
 
     private function sendData(string $token): array
     {
-        return ['class' => ExampleNotification::class, 'confirm_send' => '1', 'target_hash' => hash('sha256', $token)];
+        return ['class' => ExampleNotification::class, 'target_hash' => hash('sha256', $token)];
     }
 }

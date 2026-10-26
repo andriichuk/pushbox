@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Andriichuk\Pushbox\Tests\Feature;
 
 use Andriichuk\Pushbox\Http\Controllers\PushboxController;
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
+use Andriichuk\Pushbox\Sending\SendFcmNotification;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
-use Illuminate\Support\Facades\Bus;
 
 class PushboxRouteTest extends TestCase
 {
@@ -55,53 +54,50 @@ class PushboxRouteTest extends TestCase
             ->assertSee($token, false);
     }
 
-    public function test_send_dispatches_sync_job_when_enabled(): void
+    public function test_send_calls_sender_and_returns_its_report(): void
     {
         $this->writeRouteFile();
 
         config(['pushbox.send.enabled' => true]);
         config(['pushbox.send_allow_non_local' => true]);
 
-        Bus::fake();
-
         $token = 'test-token-'.str_repeat('a', 20);
+        $report = ['ok' => true, 'status' => 'accepted', 'response_text' => 'Provider response'];
+        $this->mock(SendFcmNotification::class)->shouldReceive('send')->once()
+            ->with($token, ExampleNotification::class, null, null)->andReturn($report);
         $this->withSession([PushboxController::SESSION_FCM_DEVICE_TOKEN => $token])->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
-                'confirm_send' => '1',
                 'target_hash' => hash('sha256', $token),
             ])
             ->assertRedirect();
 
-        Bus::assertDispatched(SendPushboxFcmNotificationJob::class, function (SendPushboxFcmNotificationJob $job): bool {
-            return $job->connection === 'sync';
-        });
+        self::assertSame($report, session('pushbox_send_result'));
     }
 
-    public function test_send_without_token_does_not_dispatch(): void
+    public function test_send_without_token_does_not_call_sender(): void
     {
         $this->writeRouteFile();
 
         config(['pushbox.send.enabled' => true]);
         config(['pushbox.send_allow_non_local' => true]);
 
-        Bus::fake();
+        $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
 
         $this->from('/pushbox')
             ->post('/pushbox/send', [
                 'class' => ExampleNotification::class,
-                'confirm_send' => '1',
                 'target_hash' => hash('sha256', ''),
             ])
             ->assertRedirect()
             ->assertSessionHasErrors(['pushbox']);
 
-        Bus::assertNothingDispatched();
     }
 
     private function writeRouteFile(): void
     {
         $path = config('pushbox.route_file');
+
         if (! is_dir(dirname($path))) {
             mkdir(dirname($path), 0777, true);
         }

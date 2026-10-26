@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace Andriichuk\Pushbox;
 
 use Andriichuk\Pushbox\Http\Middleware\EnsurePushboxEnabled;
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
-use Andriichuk\Pushbox\Listeners\RecordPushboxFcmNotificationFailure;
-use Andriichuk\Pushbox\Preview\FcmPreviewNormalizer;
-use Andriichuk\Pushbox\Preview\PreviewResolver;
-use Andriichuk\Pushbox\Sending\PendingFcmCapture;
+use Andriichuk\Pushbox\Listeners\RecordFcmSendResult;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationFailed;
@@ -26,37 +22,21 @@ class PushboxServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/pushbox.php', 'pushbox');
 
-        $this->app->scoped(Pushbox::class, function ($app) {
-            return new Pushbox;
-        });
+        $this->app->scoped(Pushbox::class);
 
         $this->app->alias(Pushbox::class, 'pushbox');
-
-        $this->app->singleton(FcmPreviewNormalizer::class);
-        $this->app->singleton(PreviewResolver::class);
     }
 
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pushbox');
         View::composer('pushbox::index', function ($view): void {
+            $view->with('pushboxFavicon', 'data:image/svg+xml,'.rawurlencode(file_get_contents(__DIR__.'/../resources/favicon.svg')));
             $view->with('pushboxCss', file_get_contents(__DIR__.'/../resources/dist/pushbox.css'));
             $view->with('pushboxJs', file_get_contents(__DIR__.'/../resources/js/pushbox.js'));
         });
 
-        Event::listen(NotificationFailed::class, RecordPushboxFcmNotificationFailure::class);
-
-        Event::listen(NotificationSent::class, function (NotificationSent $event): void {
-            if (! app()->bound(PendingFcmCapture::class)) {
-                return;
-            }
-
-            if (! SendPushboxFcmNotificationJob::isFcmNotificationChannel($event->channel)) {
-                return;
-            }
-
-            app(PendingFcmCapture::class)->response = $event->response;
-        });
+        Event::listen([NotificationSent::class, NotificationFailed::class], RecordFcmSendResult::class);
 
         RateLimiter::for('pushbox-send', fn (Request $request) => Limit::perMinute(10)->by($request->ip())
         );

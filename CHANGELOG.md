@@ -6,7 +6,7 @@
 
 - Support PHP 8.4/8.5 and Laravel 12/13; remove Laravel 11 support.
 - Require the `viewPushbox` authorization Gate outside local/testing.
-- Separate token Save/Clear from sending. Send requests require explicit confirmation and the current target hash.
+- Separate token Save/Clear from sending. Send requests validate the current target hash.
 - Log actual outcomes as `pushbox.accepted`, `pushbox.failed`, and `pushbox.skipped`.
 
 ### Fixed
@@ -20,10 +20,10 @@
 
 ### Added
 
-- Required test-device confirmation, stale-target detection, and send throttling.
+- Stale-target detection and send throttling.
 - Bundled offline UI assets and real-driver, browser, lifecycle, and access regression tests.
 - Pull-request CI for the supported compatibility matrix and optional-driver absence, security audits, and reproducible asset builds.
-- Fresh-app, Firebase setup, migration, and release documentation.
+- Fresh-app, Firebase setup, and release documentation.
 
 ## 1.0.0 - 2026-04-11
 

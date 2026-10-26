@@ -37,7 +37,14 @@ final class FcmDisplayExtractor
             self::dig($payload, ['notification', 'image']),
             self::dig($payload, ['message', 'notification', 'image']),
             self::dig($payload, ['android', 'notification', 'image']),
+            self::dig($payload, ['message', 'android', 'notification', 'image']),
+            self::dig($payload, ['webpush', 'notification', 'image']),
+            self::dig($payload, ['message', 'webpush', 'notification', 'image']),
+            self::dig($payload, ['apns', 'fcm_options', 'image']),
+            self::dig($payload, ['message', 'apns', 'fcm_options', 'image']),
             self::dig($payload, ['data', 'image']),
+            self::dig($payload, ['message', 'data', 'image']),
+            self::dig($payload, ['data', 'gcm.notification.image']),
         ]);
 
         return [
@@ -52,15 +59,17 @@ final class FcmDisplayExtractor
      */
     private static function dig(mixed $root, array $path): mixed
     {
-        $cur = $root;
+        $value = $root;
+
         foreach ($path as $key) {
-            if (! is_array($cur) || ! array_key_exists($key, $cur)) {
+            if (! is_array($value) || ! array_key_exists($key, $value)) {
                 return null;
             }
-            $cur = $cur[$key];
+
+            $value = $value[$key];
         }
 
-        return $cur;
+        return $value;
     }
 
     /**
@@ -68,9 +77,9 @@ final class FcmDisplayExtractor
      */
     private static function firstString(array $candidates): ?string
     {
-        foreach ($candidates as $v) {
-            if (is_string($v) && $v !== '') {
-                return $v;
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                return $candidate;
             }
         }
 

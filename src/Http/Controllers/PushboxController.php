@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Andriichuk\Pushbox\Http\Controllers;
 
-use Andriichuk\Pushbox\Jobs\SendPushboxFcmNotificationJob;
 use Andriichuk\Pushbox\Pushbox;
+use Andriichuk\Pushbox\Sending\SendFcmNotification;
 use Andriichuk\Pushbox\Support\TokenMask;
-use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,10 +51,11 @@ class PushboxController extends Controller
             'locales' => (array) config('pushbox.locales', []),
             'send' => (array) config('pushbox.send', []),
             'sendAllowNonLocal' => (bool) config('pushbox.send_allow_non_local', false),
-            'fcmDriverAvailable' => class_exists(SendPushboxFcmNotificationJob::FCM_CHANNEL),
+            'fcmDriverAvailable' => class_exists(SendFcmNotification::FCM_CHANNEL),
             'fcmDeviceToken' => $this->sessionDeviceToken($request),
             'fcmSendTargetHint' => $this->sendTargetLabel($request),
             'fcmSendTargetHash' => hash('sha256', $this->resolvedSendToken($request)),
+            'hasSendTarget' => $this->resolvedSendToken($request) !== '',
         ]);
     }
 
@@ -67,6 +67,7 @@ class PushboxController extends Controller
         ]);
 
         $token = trim($validated['fcm_token'] ?? '');
+
         if ($token === '') {
             $request->session()->forget(self::SESSION_FCM_DEVICE_TOKEN);
         } else {
@@ -87,7 +88,7 @@ class PushboxController extends Controller
             ->with('status', 'Saved device token cleared. No notification was sent.');
     }
 
-    public function send(Request $request, Pushbox $pushbox, Dispatcher $dispatcher): RedirectResponse
+    public function send(Request $request, SendFcmNotification $sender): RedirectResponse
     {
         abort_unless((bool) config('pushbox.send.enabled', false), 403);
         abort_unless(app()->isLocal() || (bool) config('pushbox.send_allow_non_local', false), 403);
@@ -95,64 +96,37 @@ class PushboxController extends Controller
         $validated = $request->validate([
             ...$this->selectionRules(),
             'class' => ['required', 'string', 'max:1024'],
-            'confirm_send' => ['accepted'],
             'target_hash' => ['required', 'string', 'size:64'],
             'fcm_token' => ['prohibited'],
         ]);
 
         $token = $this->resolvedSendToken($request);
+
         if ($token === '') {
             return $this->backToSelection($request)->withErrors(['pushbox' => 'Save a test device token or configure PUSHBOX_FCM_TOKEN before sending.']);
         }
 
         if (! hash_equals(hash('sha256', $token), $validated['target_hash'])) {
-            return $this->backToSelection($request)->withErrors(['pushbox' => 'The target changed. Review the displayed test device and confirm again.']);
+            return $this->backToSelection($request)->withErrors(['pushbox' => 'The target changed. Reload the preview before sending again.']);
         }
 
-        app()->forgetInstance('pushbox.send_report');
+        $report = $sender->send(
+            $token,
+            $validated['class'],
+            $validated['variant'] ?? null,
+            $validated['locale'] ?? null,
+        );
 
-        try {
-            $dispatcher->dispatch((new SendPushboxFcmNotificationJob(
-                $token,
-                $validated['class'],
-                $validated['variant'] ?? null,
-                $validated['locale'] ?? null,
-            ))->onConnection('sync'));
-
-            $report = app()->bound('pushbox.send_report') ? app('pushbox.send_report') : null;
-        } catch (Throwable $exception) {
-            $report = [
-                'ok' => false,
-                'status' => 'failed',
-                'note' => str_replace($token, TokenMask::mask($token), $exception->getMessage()),
-            ];
-        } finally {
-            app()->forgetInstance('pushbox.send_report');
-        }
-
-        if (! is_array($report)) {
-            $report = ['ok' => false, 'status' => 'skipped', 'note' => 'The send job did not return a provider report.'];
-        }
-
-        $report += [
-            'queue_connection' => 'sync',
-            'duration_ms' => null,
-            'target' => TokenMask::mask($token),
-            'notification_class' => $validated['class'],
-            'channel' => SendPushboxFcmNotificationJob::FCM_CHANNEL,
-            'response_text' => null,
-        ];
-
-        $ok = ($report['ok'] ?? false) === true;
-        $status = $ok ? 'accepted' : ($report['status'] ?? 'failed');
+        $ok = $report['ok'];
+        $status = $report['status'];
         Log::log($ok ? 'info' : 'warning', 'pushbox.'.$status, [
             'channel' => 'fcm',
             'class' => $validated['class'],
             'target' => TokenMask::mask($token),
-            'queue' => 'sync',
         ]);
 
         $redirect = $this->backToSelection($request)->with('pushbox_send_result', $report);
+
         if ($ok) {
             $redirect->with('status', 'Accepted by FCM. Device delivery is not guaranteed.');
         }
@@ -160,7 +134,9 @@ class PushboxController extends Controller
         return $redirect;
     }
 
-    /** @return array<string, list<string>> */
+    /**
+     * @return array<string, list<string>>
+     */
     private function selectionRules(): array
     {
         return [
@@ -190,6 +166,7 @@ class PushboxController extends Controller
     private function sendTargetLabel(Request $request): string
     {
         $session = $this->sessionDeviceToken($request);
+
         if ($session !== '') {
             return 'Saved device · '.TokenMask::mask($session);
         }

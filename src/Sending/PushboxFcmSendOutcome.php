@@ -42,9 +42,10 @@ final class PushboxFcmSendOutcome
     {
         if ($response instanceof Collection) {
             foreach ($response as $chunkReport) {
-                $msg = self::firstFailureMessageFromMulticast($chunkReport);
-                if ($msg !== null) {
-                    return $msg;
+                $message = self::firstFailureMessageFromMulticast($chunkReport);
+
+                if ($message !== null) {
+                    return $message;
                 }
             }
 
@@ -61,6 +62,7 @@ final class PushboxFcmSendOutcome
         }
 
         $items = $report->getItems();
+
         if ($items === []) {
             return false;
         }
@@ -96,20 +98,18 @@ final class PushboxFcmSendOutcome
 
     public static function failureMessageFromSendReportItem(object $sendReport): string
     {
-        return self::messageFromSendReport($sendReport);
-    }
-
-    private static function messageFromSendReport(object $sendReport): string
-    {
         if (method_exists($sendReport, 'error')) {
             try {
                 $error = $sendReport->error();
+
                 if ($error instanceof Throwable) {
                     return $error->getMessage();
                 }
+
                 if (is_string($error) && $error !== '') {
                     return $error;
                 }
+
                 if (is_object($error) && method_exists($error, 'getMessage')) {
                     return (string) $error->getMessage();
                 }
@@ -120,9 +120,10 @@ final class PushboxFcmSendOutcome
 
         if (method_exists($sendReport, 'message')) {
             try {
-                $m = $sendReport->message();
-                if (is_string($m) && $m !== '') {
-                    return $m;
+                $message = $sendReport->message();
+
+                if (is_string($message) && $message !== '') {
+                    return $message;
                 }
             } catch (Throwable) {
                 // fall through

@@ -1,12 +1,34 @@
-# Pushbox
+<p align="center"><img src="resources/favicon.svg" width="72" height="72" alt="Pushbox logo"></p>
 
-[![Tests](https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml/badge.svg)](https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml)
-[![Quality](https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml/badge.svg)](https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml)
-[![Packagist](https://img.shields.io/packagist/v/andriichuk/pushbox.svg)](https://packagist.org/packages/andriichuk/pushbox)
+<h1 align="center">Pushbox</h1>
 
-Preview Laravel FCM notification payloads, compare variants and translations, and send a deliberate test notification to your own device. Inspired by [Mailbook](https://github.com/Xammie/mailbook).
+<p align="center"><strong>A notification studio for Laravel.</strong><br>
+Preview FCM payloads, compare variants and translations, and send test notifications to your device.</p>
 
-![Pushbox preview and separate test-device controls](docs/images/preview.png)
+<p align="center">
+  <a href="https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml"><img src="https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml"><img src="https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml/badge.svg" alt="Quality"></a>
+  <a href="https://packagist.org/packages/andriichuk/pushbox"><img src="https://img.shields.io/packagist/v/andriichuk/pushbox.svg" alt="Packagist version"></a>
+</p>
+
+<p align="center">
+  <a href="#install-and-preview">Getting started</a> &middot;
+  <a href="#recipients-categories-variants-and-translations">Variants and translations</a> &middot;
+  <a href="#send-to-a-test-device">Test sending</a>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png"><img src="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png" alt="Pushbox workspace with notification content, data payload, and an expanded Android preview" width="1280"></a>
+</p>
+
+<details>
+<summary>Watch the workspace workflow</summary>
+
+![Switch notifications, compare variants, expand the Android preview, and inspect the raw payload](https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/workflow.gif)
+
+</details>
+
+Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
 **This branch prepares the next major release (2.0).** The published 1.x package has different behavior. This version supports **PHP 8.4/8.5 and Laravel 12/13**. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**. Laravel 11 support has been removed.
 
@@ -71,7 +93,7 @@ Pushbox::add(WelcomePush::class);
 
 Run the application locally and open `/pushbox`. Previewing calls `toFcm()` and serializes its result; Pushbox makes no Firebase request during preview. Your own factories and notification methods can still have side effects. The package can also preview objects exposing `toArray()` without installing the FCM driver.
 
-The device cards are visual approximations. Actual iOS/Android rendering, foreground behavior, permissions, and data-only messages depend on the client application and OS.
+The Android preview is a visual approximation. It shows a thumbnail for collapsed notifications and a larger image when expanded, when the payload includes an image. Actual rendering, foreground behavior, permissions, and data-only messages depend on the client application and OS.
 
 ## Recipients, categories, variants, and translations
 
@@ -109,12 +131,12 @@ Set `PUSHBOX_DATABASE_ROLLBACK=true` to wrap preview factory resolution and `toF
 
 1. Configure the Firebase Admin SDK using the channel's [installation instructions](https://github.com/laravel-notification-channels/fcm#installation). Usually this means setting `FIREBASE_CREDENTIALS` to an absolute service-account JSON path outside the public directory. Keep credentials out of Git. Use a dedicated test Firebase project.
 2. Obtain an FCM registration token from your test client (for example Firebase Messaging's `getToken()` on Android or Web, or `Messaging.messaging().token` on Apple platforms). The device token and service account must belong to the same Firebase project. Apple delivery also requires the project's APNs configuration and device permissions.
-3. Set `PUSHBOX_ALLOW_SEND=true` locally, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
-4. Review the masked target, select the test-device confirmation, and press **Send notification**. The browser also asks for confirmation.
+3. Set `PUSHBOX_ALLOW_SEND=true` locally, open **Device settings**, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
+4. Press **Send notification** to send immediately to the saved device token, or the configured default when no token is saved.
 
 Save and Clear never send. Sending uses the saved session token, then the configured default; it never changes a User's stored production token. Clearing a saved token reveals the configured default. A stale page cannot send to a newly changed target without reviewing it again.
 
-Test sends run synchronously on the FCM channel only, regardless of `via()` or `ShouldQueue` on your application notification. Pushbox wraps the notification to preserve its recipient-dependent content while routing delivery to the test device. Its `shouldSend()` veto is respected. Application notification events for a test send refer to this wrapper. Pushbox does not invoke other channels.
+Test sends call the FCM channel synchronously without dispatching queue jobs, regardless of `via()` or `ShouldQueue` on your application notification. Pushbox wraps the notification to preserve its recipient-dependent content while routing delivery to the test device. Its `shouldSend()` veto is respected. Application notification events for a test send refer to this wrapper. Pushbox does not invoke other channels.
 
 Reports distinguish **accepted**, **failed**, and **skipped**. FCM acceptance does not guarantee receipt. Structured reports include provider message IDs where available and mask the test token. Logs use `pushbox.accepted`, `pushbox.failed`, or `pushbox.skipped`; they do not contain the raw token.
 
@@ -175,6 +197,10 @@ npm test
 Commit the generated `resources/dist/pushbox.css`. CI checks PHP 8.4/8.5 with Laravel 12/13, lowest security-allowed and stable dependencies, a Windows lane, operation without FCM, browser interactions, static analysis, formatting, and dependency audits. Dependency changes require review; no workflow auto-merges or writes directly to main.
 
 See [the release checklist](docs/RELEASING.md) for fresh-app, package archive, production-install, and real-device validation. Do not overwrite the existing `v1.0.0` tag.
+
+## Contributing and support
+
+Bug reports, feature ideas, and pull requests are welcome. See [Contributing](CONTRIBUTING.md) for setup and checks, [Support](SUPPORT.md) for help, and [Security](SECURITY.md) to report a vulnerability privately.
 
 ## License
 

@@ -26,8 +26,10 @@ class EnsurePushboxEnabled
         }
 
         $allowed = config('pushbox.allowed_ips', []);
+
         if (is_array($allowed) && $allowed !== []) {
             $ip = $request->ip();
+
             if (! in_array($ip, $allowed, true)) {
                 abort(403);
             }
