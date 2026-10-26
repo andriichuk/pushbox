@@ -16,9 +16,7 @@ class NotifyRegistrar
 
     private ?string $label = null;
 
-    public function __construct(
-        private readonly Collection $collection,
-    ) {}
+    public function __construct(private readonly Collection $collection) {}
 
     public static function make(Collection $collection): self
     {

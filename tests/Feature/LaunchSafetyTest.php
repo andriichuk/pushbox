@@ -106,6 +106,7 @@ class LaunchSafetyTest extends TestCase
             'ok' => false,
             'status' => 'skipped',
         ]);
+
         for ($attempt = 0; $attempt < 10; $attempt++) {
             $this->post('/pushbox/send', $this->sendData('test-token'))->assertRedirect();
         }

@@ -16,6 +16,7 @@ class BrowserFixtureTest extends TestCase
     public function test_render_browser_fixtures(): void
     {
         $directory = dirname(__DIR__, 2).'/build/browser';
+
         if (! is_dir($directory)) {
             mkdir($directory, 0777, true);
         }

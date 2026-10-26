@@ -19,6 +19,7 @@ abstract class TestCase extends Orchestra
     protected function tearDown(): void
     {
         $path = config('pushbox.route_file');
+
         if (is_string($path) && is_file($path)) {
             unlink($path);
         }

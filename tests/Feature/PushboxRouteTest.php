@@ -97,6 +97,7 @@ class PushboxRouteTest extends TestCase
     private function writeRouteFile(): void
     {
         $path = config('pushbox.route_file');
+
         if (! is_dir(dirname($path))) {
             mkdir(dirname($path), 0777, true);
         }

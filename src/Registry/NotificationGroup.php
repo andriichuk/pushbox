@@ -14,10 +14,14 @@ use Traversable;
  */
 final class NotificationGroup implements Countable, IteratorAggregate
 {
-    /** @var Collection<int, NotificationItem> */
+    /**
+     * @var Collection<int, NotificationItem>
+     */
     public readonly Collection $items;
 
-    /** @param iterable<int, NotificationItem> $items */
+    /**
+     * @param  iterable<int, NotificationItem>  $items
+     */
     public function __construct(
         public readonly string $label,
         iterable $items = [],
@@ -30,7 +34,9 @@ final class NotificationGroup implements Countable, IteratorAggregate
         return $this->items->count();
     }
 
-    /** @return Traversable<int, NotificationItem> */
+    /**
+     * @return Traversable<int, NotificationItem>
+     */
     public function getIterator(): Traversable
     {
         return $this->items->getIterator();

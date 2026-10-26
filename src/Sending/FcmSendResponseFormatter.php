@@ -86,7 +86,9 @@ final class FcmSendResponseFormatter
         return (string) $response;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private static function sendReportData(object $report): array
     {
         $error = $report->error();

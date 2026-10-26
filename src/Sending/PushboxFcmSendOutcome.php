@@ -62,6 +62,7 @@ final class PushboxFcmSendOutcome
         }
 
         $items = $report->getItems();
+
         if ($items === []) {
             return false;
         }
@@ -100,12 +101,15 @@ final class PushboxFcmSendOutcome
         if (method_exists($sendReport, 'error')) {
             try {
                 $error = $sendReport->error();
+
                 if ($error instanceof Throwable) {
                     return $error->getMessage();
                 }
+
                 if (is_string($error) && $error !== '') {
                     return $error;
                 }
+
                 if (is_object($error) && method_exists($error, 'getMessage')) {
                     return (string) $error->getMessage();
                 }

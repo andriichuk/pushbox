@@ -47,6 +47,7 @@ class PreviewLifecycleTest extends TestCase
             DB::table('preview_rows')->insert(['id' => 1]);
             throw new RuntimeException('Factory failed');
         }, null, null, null);
+
         try {
             app(PreviewResolver::class)->resolve($item);
             self::fail('Expected factory exception');

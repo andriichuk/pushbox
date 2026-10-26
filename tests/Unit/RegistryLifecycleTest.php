@@ -16,6 +16,7 @@ class RegistryLifecycleTest extends TestCase
     {
         Pushbox::category('Outer')->group(function (): void {
             Pushbox::add(ExampleNotification::class);
+
             try {
                 Pushbox::category('Inner')->group(function (): void {
                     Pushbox::add(ExampleNotification::class);

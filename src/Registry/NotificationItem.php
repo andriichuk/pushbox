@@ -15,7 +15,9 @@ class NotificationItem
 {
     private ?string $selectedVariant = null;
 
-    /** @var array<string, Closure> */
+    /**
+     * @var array<string, Closure>
+     */
     private array $variants = [];
 
     /**
@@ -85,6 +87,7 @@ class NotificationItem
         }
 
         $factory = $this->factory;
+
         if (is_string($factory)) {
             return $container->make($factory);
         }

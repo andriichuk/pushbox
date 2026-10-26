@@ -184,7 +184,9 @@ class FcmSendingTest extends TestCase
         self::assertSame('Nested send failed', $nestedReport['note']);
     }
 
-    /** @return array<string, array{bool}> */
+    /**
+     * @return array<string, array{bool}>
+     */
     public static function secondaryNotificationOutcomes(): array
     {
         return [

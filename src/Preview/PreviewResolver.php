@@ -55,6 +55,7 @@ class PreviewResolver
             $notifiable = $item->notifiable() ?? new stdClass;
 
             $fcm = null;
+
             if (method_exists($notification, 'toFcm')) {
                 $fcm = $this->fcmNormalizer->normalize($notification->toFcm($notifiable));
             }

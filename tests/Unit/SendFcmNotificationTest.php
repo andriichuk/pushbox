@@ -15,7 +15,9 @@ use RuntimeException;
 
 class SendFcmNotificationTest extends TestCase
 {
-    /** @return array<string, array{bool, bool}> */
+    /**
+     * @return array<string, array{bool, bool}>
+     */
     public static function disabledSendConfigurations(): array
     {
         return ['sending disabled' => [false, true], 'non-local sending disabled' => [true, false]];

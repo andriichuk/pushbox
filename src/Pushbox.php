@@ -125,6 +125,7 @@ class Pushbox
         }
 
         $codes = $this->localeCodes();
+
         if ($codes !== [] && ! in_array($locale, $codes, true)) {
             return $this->locale = (string) config('app.locale', 'en');
         }

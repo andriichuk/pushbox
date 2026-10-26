@@ -12,6 +12,7 @@ $app = require $directory.'/bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $request = Request::create('/pushbox', 'GET');
 $response = $kernel->handle($request);
+
 if ($response->getStatusCode() !== $expected) {
     fwrite(STDERR, 'Expected '.$expected.', received '.$response->getStatusCode().PHP_EOL);
     exit(1);

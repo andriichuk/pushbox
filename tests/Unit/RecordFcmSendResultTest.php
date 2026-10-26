@@ -18,7 +18,9 @@ use stdClass;
 
 class RecordFcmSendResultTest extends TestCase
 {
-    /** @return array<string, array{string}> */
+    /**
+     * @return array<string, array{string}>
+     */
     public static function fcmChannels(): array
     {
         return ['class name' => [SendFcmNotification::FCM_CHANNEL], 'alias' => ['fcm']];

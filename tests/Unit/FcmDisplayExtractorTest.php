@@ -10,7 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 class FcmDisplayExtractorTest extends TestCase
 {
-    /** @return array<string, array{array<string, mixed>}> */
+    /**
+     * @return array<string, array{array<string, mixed>}>
+     */
     public static function imagePayloads(): array
     {
         $image = 'https://example.com/product.jpg';
@@ -30,7 +32,9 @@ class FcmDisplayExtractorTest extends TestCase
         ];
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     #[DataProvider('imagePayloads')]
     public function test_extracts_images_from_supported_payload_shapes(array $payload): void
     {

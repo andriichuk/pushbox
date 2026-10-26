@@ -67,6 +67,7 @@ class PushboxController extends Controller
         ]);
 
         $token = trim($validated['fcm_token'] ?? '');
+
         if ($token === '') {
             $request->session()->forget(self::SESSION_FCM_DEVICE_TOKEN);
         } else {
@@ -100,6 +101,7 @@ class PushboxController extends Controller
         ]);
 
         $token = $this->resolvedSendToken($request);
+
         if ($token === '') {
             return $this->backToSelection($request)->withErrors(['pushbox' => 'Save a test device token or configure PUSHBOX_FCM_TOKEN before sending.']);
         }
@@ -124,6 +126,7 @@ class PushboxController extends Controller
         ]);
 
         $redirect = $this->backToSelection($request)->with('pushbox_send_result', $report);
+
         if ($ok) {
             $redirect->with('status', 'Accepted by FCM. Device delivery is not guaranteed.');
         }
@@ -131,7 +134,9 @@ class PushboxController extends Controller
         return $redirect;
     }
 
-    /** @return array<string, list<string>> */
+    /**
+     * @return array<string, list<string>>
+     */
     private function selectionRules(): array
     {
         return [
@@ -161,6 +166,7 @@ class PushboxController extends Controller
     private function sendTargetLabel(Request $request): string
     {
         $session = $this->sessionDeviceToken($request);
+
         if ($session !== '') {
             return 'Saved device · '.TokenMask::mask($session);
         }

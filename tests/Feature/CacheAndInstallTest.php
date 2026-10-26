@@ -15,6 +15,7 @@ class CacheAndInstallTest extends TestCase
     public function test_cached_routes_remain_protected_after_environment_changes(): void
     {
         $routes = $this->app['router']->getRoutes();
+
         foreach ($routes as $route) {
             $route->prepareForSerialization();
         }
