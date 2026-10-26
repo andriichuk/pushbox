@@ -7,3 +7,14 @@
 /package-lock.json export-ignore
 /phpunit.xml export-ignore
 /phpstan.neon.dist export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/composer.lock export-ignore
+/pint.json export-ignore
+/examples export-ignore
+/vendor export-ignore
+/.phpunit.cache export-ignore
+/test-results export-ignore
+/playwright-report export-ignore
+/docs/images export-ignore
+/resources/css export-ignore

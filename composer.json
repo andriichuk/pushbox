@@ -89,7 +89,14 @@
             "/vendor",
             "/.phpunit.cache",
             "/test-results",
-            "/playwright-report"
+            "/playwright-report",
+            "/.gitignore",
+            "/.gitattributes",
+            "/composer.lock",
+            "/pint.json",
+            "/examples",
+            "/docs/images",
+            "/resources/css"
         ]
     }
 }

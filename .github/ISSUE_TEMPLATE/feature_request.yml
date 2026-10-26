@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement to the Pushbox workflow.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Which workflow needs improvement?
+      description: Explain what you are trying to do and where the current behavior gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the outcome you would like, with an example when useful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and context
+      description: Existing workarounds, related tools, or screenshots that help explain the proposal.

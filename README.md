@@ -1,3 +1,5 @@
+<p align="center"><img src="resources/favicon.svg" width="72" height="72" alt="Pushbox logo"></p>
+
 <h1 align="center">Pushbox</h1>
 
 <p align="center"><strong>A notification studio for Laravel.</strong><br>
@@ -16,8 +18,15 @@ Preview FCM payloads, compare variants and translations, and send test notificat
 </p>
 
 <p align="center">
-  <a href="docs/images/preview.png"><img src="docs/images/preview.png" alt="Pushbox workspace with notification content, data payload, and an expanded Android preview" width="1440"></a>
+  <a href="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png"><img src="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png" alt="Pushbox workspace with notification content, data payload, and an expanded Android preview" width="1280"></a>
 </p>
+
+<details>
+<summary>Watch the workspace workflow</summary>
+
+![Switch notifications, compare variants, expand the Android preview, and inspect the raw payload](https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/workflow.gif)
+
+</details>
 
 Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
@@ -188,6 +197,10 @@ npm test
 Commit the generated `resources/dist/pushbox.css`. CI checks PHP 8.4/8.5 with Laravel 12/13, lowest security-allowed and stable dependencies, a Windows lane, operation without FCM, browser interactions, static analysis, formatting, and dependency audits. Dependency changes require review; no workflow auto-merges or writes directly to main.
 
 See [the release checklist](docs/RELEASING.md) for fresh-app, package archive, production-install, and real-device validation. Do not overwrite the existing `v1.0.0` tag.
+
+## Contributing and support
+
+Bug reports, feature ideas, and pull requests are welcome. See [Contributing](CONTRIBUTING.md) for setup and checks, [Support](SUPPORT.md) for help, and [Security](SECURITY.md) to report a vulnerability privately.
 
 ## License
 

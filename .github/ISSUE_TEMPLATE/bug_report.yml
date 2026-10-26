@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible problem with Pushbox.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search existing issues first. Use placeholders for device tokens, credentials, and private payload data. Report vulnerabilities privately using SECURITY.md.
+  - type: input
+    id: package_version
+    attributes:
+      label: Pushbox version or commit
+      placeholder: Output of composer show andriichuk/pushbox
+    validations:
+      required: true
+  - type: input
+    id: php_version
+    attributes:
+      label: PHP version
+    validations:
+      required: true
+  - type: input
+    id: laravel_version
+    attributes:
+      label: Laravel version
+    validations:
+      required: true
+  - type: input
+    id: fcm_version
+    attributes:
+      label: FCM driver version
+      description: Include laravel-notification-channels/fcm and kreait/firebase-php versions for FCM problems, or write "not installed".
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and minimal reproduction
+      description: Include the smallest notification, Pushbox registration, and configuration needed to reproduce the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the redacted error or sending result. Firebase acceptance and device delivery are different outcomes.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Browser, operating system, screenshots, or other relevant details.
