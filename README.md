@@ -1,12 +1,25 @@
-# Pushbox
+<h1 align="center">Pushbox</h1>
 
-[![Tests](https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml/badge.svg)](https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml)
-[![Quality](https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml/badge.svg)](https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml)
-[![Packagist](https://img.shields.io/packagist/v/andriichuk/pushbox.svg)](https://packagist.org/packages/andriichuk/pushbox)
+<p align="center"><strong>A notification studio for Laravel.</strong><br>
+Preview FCM payloads, compare variants and translations, and send test notifications to your device.</p>
 
-Preview Laravel FCM notification payloads, compare variants and translations, and send a deliberate test notification to your own device. Inspired by [Mailbook](https://github.com/Xammie/mailbook).
+<p align="center">
+  <a href="https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml"><img src="https://github.com/andriichuk/pushbox/actions/workflows/run-tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml"><img src="https://github.com/andriichuk/pushbox/actions/workflows/phpstan.yml/badge.svg" alt="Quality"></a>
+  <a href="https://packagist.org/packages/andriichuk/pushbox"><img src="https://img.shields.io/packagist/v/andriichuk/pushbox.svg" alt="Packagist version"></a>
+</p>
 
-![Pushbox notification workspace with Android preview](docs/images/preview.png)
+<p align="center">
+  <a href="#install-and-preview">Getting started</a> &middot;
+  <a href="#recipients-categories-variants-and-translations">Variants and translations</a> &middot;
+  <a href="#send-to-a-test-device">Test sending</a>
+</p>
+
+<p align="center">
+  <a href="docs/images/preview.png"><img src="docs/images/preview.png" alt="Pushbox workspace with notification content, data payload, and an expanded Android preview" width="1440"></a>
+</p>
+
+Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
 **This branch prepares the next major release (2.0).** The published 1.x package has different behavior. This version supports **PHP 8.4/8.5 and Laravel 12/13**. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**. Laravel 11 support has been removed.
 
