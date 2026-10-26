@@ -20,25 +20,29 @@ class SendFcmNotificationTest extends TestCase
      */
     public static function disabledSendConfigurations(): array
     {
-        return ['sending disabled' => [false, true], 'non-local sending disabled' => [true, false]];
+        return [
+            'workspace disabled' => [false, true],
+            'sending disabled' => [true, false],
+            'both disabled' => [false, false],
+        ];
     }
 
     #[DataProvider('disabledSendConfigurations')]
-    public function test_direct_service_calls_respect_environment_guards(bool $enabled, bool $allowNonLocal): void
+    public function test_direct_service_calls_respect_enablement_flags(bool $workspaceEnabled, bool $sendingEnabled): void
     {
-        config(['pushbox.send.enabled' => $enabled, 'pushbox.send_allow_non_local' => $allowNonLocal]);
+        config(['pushbox.enabled' => $workspaceEnabled, 'pushbox.send.enabled' => $sendingEnabled]);
         Notification::shouldReceive('sendNow')->never();
 
         $report = app(SendFcmNotification::class)->send('test-device-token', ExampleNotification::class);
 
         self::assertFalse($report['ok']);
         self::assertSame('failed', $report['status']);
-        self::assertSame('Pushbox test sending is disabled in this environment.', $report['note']);
+        self::assertSame('Pushbox test sending is disabled.', $report['note']);
     }
 
     public function test_unregistered_notifications_return_a_failed_report(): void
     {
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true]);
+        config(['pushbox.send.enabled' => true]);
         Notification::shouldReceive('sendNow')->never();
 
         $report = app(SendFcmNotification::class)->send('test-device-token', ExampleNotification::class);
@@ -51,7 +55,7 @@ class SendFcmNotificationTest extends TestCase
     #[Group('fcm')]
     public function test_factory_failure_returns_a_redacted_report_and_restores_locale(): void
     {
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true]);
+        config(['pushbox.send.enabled' => true]);
         app()->setLocale('en');
         app(Pushbox::class)->add(function (): ExampleNotification {
             self::assertSame('uk', app()->getLocale());

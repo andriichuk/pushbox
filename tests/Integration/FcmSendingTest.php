@@ -42,7 +42,7 @@ class FcmSendingTest extends TestCase
 
     private function prepare(): array
     {
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'test-device-token', 'pushbox.locales' => ['en' => 'English', 'uk' => 'Ukrainian']]);
+        config(['pushbox.send.enabled' => true, 'pushbox.send.fcm.token' => 'test-device-token', 'pushbox.locales' => ['en' => 'English', 'uk' => 'Ukrainian']]);
         app()->setLocale('en');
         app('translator')->addLines(['push.title' => 'Hello'], 'en');
         app('translator')->addLines(['push.title' => 'Вітаю'], 'uk');
@@ -53,6 +53,36 @@ class FcmSendingTest extends TestCase
         app()->instance(FcmChannel::class, new FcmChannel(app(Dispatcher::class), $client));
 
         return [$book, $recipient, $client];
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function environments(): array
+    {
+        return [
+            'local' => ['local'],
+            'testing' => ['testing'],
+            'staging' => ['staging'],
+            'production' => ['production'],
+            'custom' => ['preview'],
+        ];
+    }
+
+    #[DataProvider('environments')]
+    public function test_enabled_sends_work_in_every_environment(string $environment): void
+    {
+        $this->app['env'] = $environment;
+        [, , $client] = $this->prepare();
+        $client->shouldReceive('sendMulticast')->once()->andReturn(MulticastSendReport::withItems([
+            SendReport::success(MessageTarget::with('token', 'test-device-token'), ['name' => 'projects/test/messages/enabled']),
+        ]));
+        $this->withSession(['_token' => 'test-csrf'])->withHeader('X-CSRF-TOKEN', 'test-csrf');
+
+        $this->get('/pushbox')->assertOk()->assertSee('id="pushbox-send-form"', false);
+        $this->post('/pushbox/send', $this->sendData())
+            ->assertRedirect()
+            ->assertSessionHas('pushbox_send_result.status', 'accepted');
     }
 
     public function test_real_driver_uses_only_test_token_and_matches_translated_preview(): void

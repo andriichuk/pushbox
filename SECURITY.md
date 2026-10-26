@@ -21,4 +21,4 @@ Security fixes are developed on `main` and published in a package release. Inclu
 
 ## Intended use
 
-Pushbox is a developer tool. Install it in `require-dev`, keep it restricted to local development by default, and use an explicit authorization policy when enabling staging access. Test sends deliver real notifications to the configured device. See the [access and sending documentation](README.md#local-and-staging-access).
+Pushbox is enabled by default in every environment. Apply your application’s authentication middleware and authorization policy to control access, or set `PUSHBOX_ENABLED=false` to disable it. Test sends deliver real notifications to the configured device. See the [access and sending documentation](README.md#enablement-and-access).

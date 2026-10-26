@@ -50,7 +50,6 @@ class PushboxController extends Controller
             'selectedLocale' => $pushbox->getLocale() ?? app()->getLocale(),
             'locales' => (array) config('pushbox.locales', []),
             'send' => (array) config('pushbox.send', []),
-            'sendAllowNonLocal' => (bool) config('pushbox.send_allow_non_local', false),
             'fcmDriverAvailable' => class_exists(SendFcmNotification::FCM_CHANNEL),
             'fcmDeviceToken' => $this->sessionDeviceToken($request),
             'fcmSendTargetHint' => $this->sendTargetLabel($request),
@@ -91,7 +90,6 @@ class PushboxController extends Controller
     public function send(Request $request, SendFcmNotification $sender): RedirectResponse
     {
         abort_unless((bool) config('pushbox.send.enabled', false), 403);
-        abort_unless(app()->isLocal() || (bool) config('pushbox.send_allow_non_local', false), 403);
 
         $validated = $request->validate([
             ...$this->selectionRules(),

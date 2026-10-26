@@ -59,7 +59,6 @@ class PushboxRouteTest extends TestCase
         $this->writeRouteFile();
 
         config(['pushbox.send.enabled' => true]);
-        config(['pushbox.send_allow_non_local' => true]);
 
         $token = 'test-token-'.str_repeat('a', 20);
         $report = ['ok' => true, 'status' => 'accepted', 'response_text' => 'Provider response'];
@@ -80,7 +79,6 @@ class PushboxRouteTest extends TestCase
         $this->writeRouteFile();
 
         config(['pushbox.send.enabled' => true]);
-        config(['pushbox.send_allow_non_local' => true]);
 
         $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
 

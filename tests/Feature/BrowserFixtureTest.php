@@ -26,7 +26,7 @@ class BrowserFixtureTest extends TestCase
             ->variant('Long message', fn (): BrowserOrderNotification => new BrowserOrderNotification)
             ->variant('With image', fn (): BrowserOrderNotification => new BrowserOrderNotification(url('/notification-image.svg')));
         app(Pushbox::class)->category('Payments')->label('Payment received')->add(ExampleNotification::class);
-        config(['app.name' => 'Consumer app name', 'pushbox.preview_app_name' => 'Demo Store', 'pushbox.locales' => ['en' => 'English'], 'pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'browser-test-device']);
+        config(['app.name' => 'Consumer app name', 'pushbox.preview_app_name' => 'Demo Store', 'pushbox.locales' => ['en' => 'English'], 'pushbox.send.enabled' => true, 'pushbox.send.fcm.token' => 'browser-test-device']);
         file_put_contents($directory.'/notification.html', $this->get('/pushbox')->assertOk()->assertSeeText('Demo Store')->assertDontSeeText('Consumer app name')->getContent());
         $imagePreview = $this->get(route('pushbox.index', ['class' => BrowserOrderNotification::class, 'variant' => 'With image']))
             ->assertOk()->assertViewHas('previewError', null)

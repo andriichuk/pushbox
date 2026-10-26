@@ -21,36 +21,27 @@ Preview FCM payloads, compare variants and translations, and send test notificat
   <a href="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png"><img src="https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/preview.png" alt="Pushbox workspace with notification content, data payload, and an expanded Android preview" width="1280"></a>
 </p>
 
-<details>
-<summary>Watch the workspace workflow</summary>
-
-![Switch notifications, compare variants, expand the Android preview, and inspect the raw payload](https://raw.githubusercontent.com/andriichuk/pushbox/be1aeb5e4cec3f127bfba3cc9f8e46d2e97d516a/docs/images/workflow.gif)
-
-</details>
-
 Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
 **Requirements:** PHP 8.4/8.5 and Laravel 12/13. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**.
 
 ## Install and preview
 
-In a configured Laravel application with working sessions:
-
 ```bash
-composer require --dev andriichuk/pushbox
+composer require andriichuk/pushbox
 php artisan pushbox:install
 ```
 
-Laravel discovers the service provider automatically. The installer creates `routes/pushbox.php` and never overwrites existing registrations. Opening `/pushbox` before registering anything shows setup instructions.
+Open `/pushbox`. Register notifications in the generated `routes/pushbox.php`.
 
-For real `FcmMessage` payloads, install the optional channel:
+To preview FCM notifications, install the optional channel:
 
 ```bash
 composer require laravel-notification-channels/fcm:^6.2
 php artisan make:notification WelcomePush
 ```
 
-A complete notification, in `app/Notifications/WelcomePush.php`:
+`app/Notifications/WelcomePush.php`:
 
 ```php
 <?php
@@ -91,13 +82,11 @@ use App\Notifications\WelcomePush;
 Pushbox::add(WelcomePush::class);
 ```
 
-Run the application locally and open `/pushbox`. Previewing calls `toFcm()` and serializes its result; Pushbox makes no Firebase request during preview. Your own factories and notification methods can still have side effects. The package can also preview objects exposing `toArray()` without installing the FCM driver.
-
-The Android preview is a visual approximation. It shows a thumbnail for collapsed notifications and a larger image when expanded, when the payload includes an image. Actual rendering, foreground behavior, permissions, and data-only messages depend on the client application and OS.
+Previews do not send notifications. Without the FCM channel, Pushbox can preview objects exposing `toArray()`.
 
 ## Recipients, categories, variants, and translations
 
-If your notification needs a User, register one explicitly. The original recipient, including its PHP type, is used for payload content in both preview and test sending:
+Use a typed recipient and factories for different examples:
 
 ```php
 use App\Models\User;
@@ -110,97 +99,60 @@ Pushbox::to(User::factory()->make(['name' => 'Ada']))
     });
 ```
 
-Factories must declare their concrete Notification return type. Use variants for multiple examples of the same notification class; selection is by class and variant. An unknown variant produces a diagnostic instead of silently sending the default. Nested groups restore their outer context, including after an exception.
+Factories must declare their concrete notification return type. To add a language selector, publish the configuration and set `locales`:
+
+```bash
+php artisan vendor:publish --tag=pushbox-config
+```
 
 ```php
 // config/pushbox.php
 'locales' => ['en' => 'English', 'uk' => 'Ukrainian'],
 ```
 
-The selected locale applies during notification construction and `toFcm()` in both preview and sending. The previous application locale is restored afterward. Unsupported locale selections fall back to `app.locale`.
-
-Optional configuration publication:
-
-```bash
-php artisan vendor:publish --tag=pushbox-config
-```
-
-Set `PUSHBOX_DATABASE_ROLLBACK=true` to wrap preview factory resolution and `toFcm()` in a transaction on the **default database connection**. Writes on other connections, registration-file side effects, HTTP calls, mail, jobs, and real test sends are not rolled back. Prefer `factory()->make()` and put unavoidable default-DB writes inside the registered closure.
+Use `factory()->make()` for sample recipients. `PUSHBOX_DATABASE_ROLLBACK=true` rolls back preview writes on the default database connection only.
 
 ## Send to a test device
 
-1. Configure the Firebase Admin SDK using the channel's [installation instructions](https://github.com/laravel-notification-channels/fcm#installation). Usually this means setting `FIREBASE_CREDENTIALS` to an absolute service-account JSON path outside the public directory. Keep credentials out of Git. Use a dedicated test Firebase project.
-2. Obtain an FCM registration token from your test client (for example Firebase Messaging's `getToken()` on Android or Web, or `Messaging.messaging().token` on Apple platforms). The device token and service account must belong to the same Firebase project. Apple delivery also requires the project's APNs configuration and device permissions.
-3. Set `PUSHBOX_ALLOW_SEND=true` locally, open **Device settings**, paste the device token, and press **Save token**. Alternatively, set `PUSHBOX_FCM_TOKEN` as a default.
-4. Press **Send notification** to send immediately to the saved device token, or the configured default when no token is saved.
+1. Configure Firebase using the FCM channel's [installation instructions](https://github.com/laravel-notification-channels/fcm#installation).
+2. Enable sending in `.env`:
 
-Save and Clear never send. Sending uses the saved session token, then the configured default; it never changes a User's stored production token. Clearing a saved token reveals the configured default. A stale page cannot send to a newly changed target without reviewing it again.
+   ```dotenv
+   PUSHBOX_ALLOW_SEND=true
+   # Optional default device token:
+   PUSHBOX_FCM_TOKEN=your-device-token
+   ```
 
-Test sends call the FCM channel synchronously without dispatching queue jobs, regardless of `via()` or `ShouldQueue` on your application notification. Pushbox wraps the notification to preserve its recipient-dependent content while routing delivery to the test device. Its `shouldSend()` veto is respected. Application notification events for a test send refer to this wrapper. Pushbox does not invoke other channels.
+3. Open **Device settings**, save your device's FCM token, then press **Send notification**. Use a token from the same Firebase project as your credentials.
 
-Reports distinguish **accepted**, **failed**, and **skipped**. FCM acceptance does not guarantee receipt. Structured reports include provider message IDs where available and mask the test token. Logs use `pushbox.accepted`, `pushbox.failed`, or `pushbox.skipped`; they do not contain the raw token.
+Sends run immediately through FCM. Results show **accepted**, **failed**, or **skipped**; accepted does not guarantee delivery.
 
-If delivery fails:
+## Enablement and access
 
-- **Driver missing:** install FCM 6.2+; previews still work without it.
-- **Credentials/project mismatch:** verify the configured Firebase project and service account.
-- **Invalid/unregistered token:** obtain a fresh token from the intended device.
-- **Accepted, no display:** check client permissions, foreground handlers, APNs setup, and whether the message is data-only.
-- **Skipped:** check the notification's `shouldSend()` condition and application notification event listeners.
-- **419:** restore the application's sessions/CSRF configuration. **429:** test sends are limited to 10 per minute per IP.
-
-## Local and staging access
-
-Default routes are available only in `local` and `testing`, with an additional request-time check that also protects cached routes. `PUSHBOX_ENABLED=false` disables access. Ship the package in `require-dev`; a production `composer install --no-dev` omits it.
-
-Staging requires explicit configuration:
+Pushbox is enabled by default in every environment and remains installed with `composer install --no-dev`. To disable it:
 
 ```dotenv
-PUSHBOX_LOCAL_ONLY=false
-PUSHBOX_SEND_NON_LOCAL=true
-PUSHBOX_ALLOW_SEND=true
-PUSHBOX_ALLOWED_IPS=203.0.113.10
+PUSHBOX_ENABLED=false
 ```
 
-It also requires an authorization Gate in your application's service provider. Keep your real environment name; define the gate using your application's actual access policy:
+Restrict access with your application's middleware or a `viewPushbox` Gate:
 
 ```php
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 Gate::define('viewPushbox', function (?User $user): bool {
-    // Replace this with your project's authorization policy.
     return $user !== null && $user->can('use-developer-tools');
 });
 ```
 
-Outside local/testing, an undefined or denied `viewPushbox` Gate denies all preview, token, and send routes. The optional IP allowlist adds a restriction; it does not replace authorization. Configure Laravel's trusted proxies correctly when using an IP allowlist or rate limits.
+A defined Gate applies to every Pushbox route. Configure `pushbox.middleware` for authentication, `pushbox.path` for a custom URL, or `PUSHBOX_ALLOWED_IPS` for an IP allowlist.
 
-`pushbox.path` changes the route prefix, and `pushbox.middleware` can add your app's authentication middleware. Rebuild route/config caches in the deployment's intended environment. Do not copy a locally generated configuration cache into production: Laravel's cached `app.env` determines its environment.
-
-UI CSS and JavaScript are bundled, so viewing Pushbox needs no CDN, external fonts, asset publication, or Node installation. Payload images may still load their own URLs.
-
-## Development and release checks
-
-```bash
-composer install
-composer test
-composer analyse
-composer lint:check
-composer audit
-npm ci --ignore-scripts
-npm run build
-npx playwright install chromium
-npm test
-```
-
-Commit the generated `resources/dist/pushbox.css`. CI checks PHP 8.4/8.5 with Laravel 12/13, lowest security-allowed and stable dependencies, a Windows lane, operation without FCM, browser interactions, static analysis, formatting, and dependency audits. Dependency changes require review; no workflow auto-merges or writes directly to main.
-
-See [the release checklist](docs/RELEASING.md) for fresh-app, package archive, production-install, and real-device validation.
+After configuration changes, rebuild any configuration and route caches used by your application.
 
 ## Contributing and support
 
-Bug reports, feature ideas, and pull requests are welcome. See [Contributing](CONTRIBUTING.md) for setup and checks, [Support](SUPPORT.md) for help, and [Security](SECURITY.md) to report a vulnerability privately.
+See [Contributing](CONTRIBUTING.md) for development and checks, [Support](SUPPORT.md) for help, and [Security](SECURITY.md) for vulnerability reports.
 
 ## License
 

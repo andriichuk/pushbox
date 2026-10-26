@@ -1,11 +1,12 @@
 # Changelog
 
-## Unreleased — next major (2.0)
+## Unreleased
 
-### Breaking
+### Changed
 
 - Support PHP 8.4/8.5 and Laravel 12/13; remove Laravel 11 support.
-- Require the `viewPushbox` authorization Gate outside local/testing.
+- Control workspace access with `PUSHBOX_ENABLED`, enabled by default and independent of the application environment.
+- Enforce the optional `viewPushbox` authorization Gate consistently in every environment.
 - Separate token Save/Clear from sending. Send requests validate the current target hash.
 - Log actual outcomes as `pushbox.accepted`, `pushbox.failed`, and `pushbox.skipped`.
 
@@ -15,7 +16,7 @@
 - Preserve typed recipients and selected translations for test payloads without changing the recipient's real device routes.
 - Restore locale, nested group context, database transactions, and scoped registry state.
 - Render setup instructions for empty installs and contain preview failures.
-- Enforce environment restrictions at request time, including cached routes.
+- Enforce the enabled flag and configured access restrictions at request time, including cached routes.
 - Report rejected, skipped, or missing provider results accurately; include actual FCM results and redact the test token.
 
 ### Added
