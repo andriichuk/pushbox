@@ -30,7 +30,7 @@ Preview FCM payloads, compare variants and translations, and send test notificat
 
 Inspired by [Mailbook](https://github.com/Xammie/mailbook).
 
-**This branch prepares the next major release (2.0).** The published 1.x package has different behavior. This version supports **PHP 8.4/8.5 and Laravel 12/13**. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**. Laravel 11 support has been removed.
+**Requirements:** PHP 8.4/8.5 and Laravel 12/13. The optional real-send integration supports **laravel-notification-channels/fcm 6.2+ (6.x)**.
 
 ## Install and preview
 
@@ -41,7 +41,7 @@ composer require --dev andriichuk/pushbox
 php artisan pushbox:install
 ```
 
-Until 2.0 is tagged, use the unreleased branch to test these changes (`dev-main` after merge). Laravel discovers the service provider automatically. The installer creates `routes/pushbox.php` and never overwrites existing registrations. Opening `/pushbox` before registering anything shows setup instructions.
+Laravel discovers the service provider automatically. The installer creates `routes/pushbox.php` and never overwrites existing registrations. Opening `/pushbox` before registering anything shows setup instructions.
 
 For real `FcmMessage` payloads, install the optional channel:
 
@@ -196,7 +196,7 @@ npm test
 
 Commit the generated `resources/dist/pushbox.css`. CI checks PHP 8.4/8.5 with Laravel 12/13, lowest security-allowed and stable dependencies, a Windows lane, operation without FCM, browser interactions, static analysis, formatting, and dependency audits. Dependency changes require review; no workflow auto-merges or writes directly to main.
 
-See [the release checklist](docs/RELEASING.md) for fresh-app, package archive, production-install, and real-device validation. Do not overwrite the existing `v1.0.0` tag.
+See [the release checklist](docs/RELEASING.md) for fresh-app, package archive, production-install, and real-device validation.
 
 ## Contributing and support
 
