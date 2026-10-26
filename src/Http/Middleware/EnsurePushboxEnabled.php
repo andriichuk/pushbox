@@ -17,11 +17,7 @@ class EnsurePushboxEnabled
             abort(404);
         }
 
-        if (config('pushbox.local_only', true) && ! app()->environment(['local', 'testing'])) {
-            abort(404);
-        }
-
-        if (! app()->environment(['local', 'testing']) && ! Gate::allows('viewPushbox')) {
+        if (Gate::has('viewPushbox') && ! Gate::allows('viewPushbox')) {
             abort(403);
         }
 

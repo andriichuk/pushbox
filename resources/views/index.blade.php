@@ -62,7 +62,7 @@
                     $dataRows = is_array($structured['data'] ?? null) ? $structured['data'] : [];
                     $androidTtl = \Illuminate\Support\Arr::get($structured, 'android.ttl');
                     $apnsExpiration = \Illuminate\Support\Arr::get($structured, 'apns.headers.apns-expiration');
-                    $pushboxCanSend = $fcm && ($send['enabled'] ?? false) && (app()->isLocal() || $sendAllowNonLocal) && $fcmDriverAvailable && ! $previewError;
+                    $pushboxCanSend = $fcm && ($send['enabled'] ?? false) && $fcmDriverAvailable && ! $previewError;
                     $pushboxReadyToSend = $pushboxCanSend && $hasSendTarget;
                 @endphp
                 <header class="pushbox-workspace-header">
@@ -106,7 +106,7 @@
                             <span>Add a device token to enable sending.</span><button type="button" class="pushbox-text-button" data-open-device>Configure device</button>
                         @else
                             <span>Test sending is disabled.</span>
-                            <details class="pushbox-inline-details"><summary>Setup details</summary><div>@if(! ($send['enabled'] ?? false))<p>Set <code>PUSHBOX_ALLOW_SEND=true</code> in your local environment.</p>@endif @if(! $fcmDriverAvailable)<p>Install the optional driver: <code>composer require laravel-notification-channels/fcm:^6.2</code>.</p>@endif @if(! app()->isLocal() && ! $sendAllowNonLocal)<p>Staging test sends also require <code>PUSHBOX_SEND_NON_LOCAL=true</code>.</p>@endif</div></details>
+                            <details class="pushbox-inline-details"><summary>Setup details</summary><div>@if(! ($send['enabled'] ?? false))<p>Set <code>PUSHBOX_ALLOW_SEND=true</code> in your application environment.</p>@endif @if(! $fcmDriverAvailable)<p>Install the optional driver: <code>composer require laravel-notification-channels/fcm:^6.2</code>.</p>@endif</div></details>
                         @endif
                     </div>
                 </header>

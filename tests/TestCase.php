@@ -33,8 +33,6 @@ abstract class TestCase extends Orchestra
 
         $app['config']->set('pushbox.route_file', sys_get_temp_dir().'/pushbox-test-'.bin2hex(random_bytes(8)).'.php');
         $app['config']->set('cache.default', 'array');
-        $app['config']->set('pushbox.enabled', true);
-        $app['config']->set('pushbox.local_only', false);
         $app['config']->set('pushbox.send.enabled', false);
     }
 }

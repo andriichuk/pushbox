@@ -60,7 +60,7 @@ class PushboxServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        if ($this->app->routesAreCached() || ! $this->shouldRegisterRoutes()) {
+        if ($this->app->routesAreCached() || ! config('pushbox.enabled', true)) {
             return;
         }
 
@@ -72,18 +72,5 @@ class PushboxServiceProvider extends ServiceProvider
         Route::middleware($middleware)
             ->prefix((string) config('pushbox.path', 'pushbox'))
             ->group(__DIR__.'/../routes/web.php');
-    }
-
-    private function shouldRegisterRoutes(): bool
-    {
-        if (! config('pushbox.enabled', true)) {
-            return false;
-        }
-
-        if (config('pushbox.local_only', true) && ! app()->environment(['local', 'testing'])) {
-            return false;
-        }
-
-        return true;
     }
 }

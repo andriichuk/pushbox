@@ -12,7 +12,7 @@ use Illuminate\Routing\RouteCollection;
 
 class CacheAndInstallTest extends TestCase
 {
-    public function test_cached_routes_remain_protected_after_environment_changes(): void
+    public function test_cached_routes_respect_the_enabled_flag_at_request_time(): void
     {
         $routes = $this->app['router']->getRoutes();
 
@@ -22,9 +22,14 @@ class CacheAndInstallTest extends TestCase
         $compiled = $routes->compile();
         $this->app['router']->setCompiledRoutes($compiled);
         $this->app->instance('routes.cached', true);
-        config(['pushbox.local_only' => true]);
-        $this->app['env'] = 'production';
+        config(['pushbox.enabled' => false]);
         $this->get('/pushbox')->assertNotFound();
+        $this->post('/pushbox/device-token', ['fcm_token' => 'test-token'])->assertNotFound();
+        $this->post('/pushbox/device-token/clear')->assertNotFound();
+        $this->post('/pushbox/send')->assertNotFound();
+
+        config(['pushbox.enabled' => true]);
+        $this->get('/pushbox')->assertOk();
     }
 
     public function test_local_request_without_csrf_cannot_change_token(): void

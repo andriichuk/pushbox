@@ -17,7 +17,7 @@ class OptionalDriverTest extends TestCase
             self::markTestSkipped('Executed in the CI lane without the optional FCM package.');
         }
         app(Pushbox::class)->add(ExampleNotification::class);
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'test-token']);
+        config(['pushbox.send.enabled' => true, 'pushbox.send.fcm.token' => 'test-token']);
         $this->get('/pushbox')->assertOk()->assertSee('Hello')->assertSee('Install the optional driver');
         $this->post('/pushbox/send', ['class' => ExampleNotification::class, 'target_hash' => hash('sha256', 'test-token')])
             ->assertSessionHas('pushbox_send_result.ok', false)

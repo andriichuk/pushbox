@@ -9,7 +9,6 @@ use Andriichuk\Pushbox\Pushbox;
 use Andriichuk\Pushbox\Sending\SendFcmNotification;
 use Andriichuk\Pushbox\Tests\Fixtures\ExampleNotification;
 use Andriichuk\Pushbox\Tests\TestCase;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use RuntimeException;
@@ -33,7 +32,7 @@ class LaunchSafetyTest extends TestCase
 
     public function test_save_and_clear_never_send_even_when_sending_is_enabled(): void
     {
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true]);
+        config(['pushbox.send.enabled' => true]);
         $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
         $this->post('/pushbox/device-token', ['fcm_token' => 'saved-token'])->assertRedirect();
         self::assertSame('saved-token', session(PushboxController::SESSION_FCM_DEVICE_TOKEN));
@@ -68,35 +67,10 @@ class LaunchSafetyTest extends TestCase
         Log::shouldHaveReceived('log')->once()->with('warning', 'pushbox.skipped', Mockery::type('array'));
     }
 
-    public function test_send_disabled_and_nonlocal_disabled_are_enforced(): void
+    public function test_send_disabled_is_enforced(): void
     {
         $this->mock(SendFcmNotification::class)->shouldNotReceive('send');
         $this->post('/pushbox/send')->assertForbidden();
-        config(['pushbox.send.enabled' => true]);
-        $this->post('/pushbox/send')->assertForbidden();
-    }
-
-    public function test_request_time_environment_guard_denies_previously_registered_routes(): void
-    {
-        config(['pushbox.local_only' => true]);
-        $this->app['env'] = 'production';
-        $this->withSession(['_token' => 'test-csrf'])->withHeader('X-CSRF-TOKEN', 'test-csrf');
-        $this->get('/pushbox')->assertNotFound();
-        $this->post('/pushbox/device-token')->assertNotFound();
-        $this->post('/pushbox/send')->assertNotFound();
-    }
-
-    public function test_staging_requires_explicit_gate_even_with_nonlocal_access_enabled(): void
-    {
-        $this->app['env'] = 'staging';
-        $this->withSession(['_token' => 'test-csrf'])->withHeader('X-CSRF-TOKEN', 'test-csrf');
-        config(['pushbox.local_only' => false]);
-        $this->get('/pushbox')->assertForbidden();
-        $this->post('/pushbox/device-token')->assertForbidden();
-        $this->post('/pushbox/device-token/clear')->assertForbidden();
-        $this->post('/pushbox/send')->assertForbidden();
-        Gate::define('viewPushbox', fn ($user = null) => true);
-        $this->get('/pushbox')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
     }
 
     public function test_send_is_rate_limited(): void
@@ -126,7 +100,7 @@ class LaunchSafetyTest extends TestCase
     private function enableSending(): void
     {
         app(Pushbox::class)->add(ExampleNotification::class);
-        config(['pushbox.send.enabled' => true, 'pushbox.send_allow_non_local' => true, 'pushbox.send.fcm.token' => 'test-token']);
+        config(['pushbox.send.enabled' => true, 'pushbox.send.fcm.token' => 'test-token']);
     }
 
     private function sendData(string $token): array

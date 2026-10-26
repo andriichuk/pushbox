@@ -65,8 +65,8 @@ class SendFcmNotification
 
     private function deliver(string $token, string $class, ?string $variant, ?string $locale, FcmSendCapture $capture): void
     {
-        if (! config('pushbox.send.enabled', false) || (! app()->isLocal() && ! config('pushbox.send_allow_non_local', false))) {
-            throw new RuntimeException('Pushbox test sending is disabled in this environment.');
+        if (! config('pushbox.enabled', true) || ! config('pushbox.send.enabled', false)) {
+            throw new RuntimeException('Pushbox test sending is disabled.');
         }
 
         $item = $this->pushbox->retrieve($class, $variant, $locale);

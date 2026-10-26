@@ -2,7 +2,7 @@
 
 ## Usage questions
 
-Start with the [README](README.md), especially the sections about [previewing notifications](README.md#install-and-preview), [test sending](README.md#send-to-a-test-device), and [local or staging access](README.md#local-and-staging-access).
+Start with the [README](README.md), especially the sections about [previewing notifications](README.md#install-and-preview), [test sending](README.md#send-to-a-test-device), and [enablement and access](README.md#enablement-and-access).
 
 If you are still stuck, search [existing issues](https://github.com/andriichuk/pushbox/issues). Open an issue with your question, the relevant package and framework versions, what you expected, and what happened instead. A small notification and registration example is more useful than a complete application.
 

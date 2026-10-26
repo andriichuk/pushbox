@@ -9,21 +9,11 @@ return [
     | Enable Pushbox
     |--------------------------------------------------------------------------
     |
-    | When false, routes are not registered.
+    | Enabled by default in every environment. Set PUSHBOX_ENABLED=false to disable.
+    | When false, routes are not registered and cached routes return 404.
     |
     */
     'enabled' => env('PUSHBOX_ENABLED', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Local only
-    |--------------------------------------------------------------------------
-    |
-    | When true, routes are only available in local/testing, including cached routes, unless
-    | you override with PUSHBOX_LOCAL_ONLY=false.
-    |
-    */
-    'local_only' => env('PUSHBOX_LOCAL_ONLY', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +22,7 @@ return [
     */
     'path' => env('PUSHBOX_PATH', 'pushbox'),
 
-    // Outside local/testing, the viewPushbox Gate must also authorize access.
+    // Add authentication middleware as needed. A defined viewPushbox Gate is also enforced.
     'middleware' => ['web'],
 
     /*
@@ -76,21 +66,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Test sending (dangerous — use only in local/staging)
-    |--------------------------------------------------------------------------
-    */
-    /*
-    |--------------------------------------------------------------------------
-    | Allow test sends outside local
+    | Test sending
     |--------------------------------------------------------------------------
     |
-    | Keep false unless you explicitly need Pushbox sends in staging.
-    | Non-local access still requires the viewPushbox Gate. Sends are
-    | limited to 10 per minute per IP address.
+    | Enable real sends separately from workspace access. Sends require
+    | PUSHBOX_ENABLED=true and are limited to 10 per minute per IP address.
     |
     */
-    'send_allow_non_local' => env('PUSHBOX_SEND_NON_LOCAL', false),
-
     'send' => [
         'enabled' => env('PUSHBOX_ALLOW_SEND', false),
         'fcm' => [
@@ -105,7 +87,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | When non-empty, only these IPs may access Pushbox (in addition to
-    | enabled/local_only checks). Values are passed to Request::ip().
+    | the enabled flag and any configured authorization). Values are
+    | compared against Request::ip().
     |
     */
     'allowed_ips' => array_values(array_filter(array_map('trim', explode(',', (string) env('PUSHBOX_ALLOWED_IPS', ''))))),
