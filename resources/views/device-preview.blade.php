@@ -17,7 +17,7 @@
                 </div>
                 <div class="mb-10 text-center">
                     <p class="text-[64px] font-extralight leading-none tracking-tight text-white">9:41</p>
-                    <p class="mt-2 text-[14px] font-medium text-white/60">Fri, Jan 17</p>
+                    <p class="mt-2 text-[14px] font-medium text-white/60">{{ now()->format('D, M j') }}</p>
                 </div>
                 <div class="rounded-[26px] bg-[#1f2937]/95 px-5 py-5 shadow-xl">
                     <div class="flex min-w-0 items-center gap-2">
