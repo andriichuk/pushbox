@@ -45,8 +45,8 @@ return [
     */
     'route_file' => base_path('routes/pushbox.php'),
 
-    // Override the app label shown in device previews.
-    'preview_app_name' => null,
+    // Defaults to APP_NAME, or app.name when unset. Set a custom label to override.
+    'preview_app_name' => env('APP_NAME'),
 
     /*
     |--------------------------------------------------------------------------
