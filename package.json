@@ -9,6 +9,6 @@
     "@playwright/test": "^1.56.0",
     "tailwindcss": "^4.1.0",
     "@tailwindcss/node": "^4.3.3",
-    "@tailwindcss/oxide": "^4.3.3"
+    "@tailwindcss/oxide": "^4.3.4"
   }
 }
